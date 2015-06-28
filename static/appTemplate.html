@@ -1,23 +1,186 @@
+<nav class="top-bar">
+	<ul class="title-area">
+		<li class="name">
+			<h1><a href="/">Bill Manager</a></h1>
+		</li>
+	</ul>
+
+	<section class="top-bar-section">
+		<ul class="right">
+			{{#if currentUser}}
+			
+			<li><a>Logged in as {{currentUser.name}}</a></li>
+
+			{{/if}}
+		</ul>
+	</section>
+</nav>
+
+<hr>
+
+{{#if !currentUser}}
+
 <div class="row">
-	<div class="large-12 columns">
-		<h2>Bill Manager</h2>
+	<div class="large-12 columns panel">
+		<form id="loginForm">
+			<div class="row">
+
+				<div class="large-4 columns">
+					<input type="text" name="email" placeholder="Email">
+				</div>
+
+				<div class="large-4 columns">
+					<input type="password" name="password" placeholder="Password">
+				</div>
+
+				<div class="large-4 columns">
+					<input type="submit" class="button expand" value="Login">
+				</div>
+			
+			</div>
+		</form>	
 	</div>
-	<hr>
 </div>
 
-{{#bills}}
+{{/if}}
 
-	<div class="row">
-		<div class="large-12 columns panel">
-			Bill {{amount}} to be paid by {{payer.name}}
-		</div>
-	</div>
+{{#if !currentGroup}}
 
-	<div class="row">
-		<div class="large-12 columns">
-			<p><a on-click="testLogin">Test Login</a></p>
-			<p>Logged in as</p>
-		</div>
+{{#groups}}
+
+<div class="row panel">
+	<div class="large-8 columns">
+		<h4><a on-click="selectGroup">{{name}}</a></h4>
 	</div>
+	<div class="large-4 columns">
+		<a class="right" on-click="deleteGroup">Delete</a>
+	</div>
+</div>
 
 {{/}}
+
+<div class="row">
+	<div class="large-12 columns panel">
+		<form id="newGroupForm">
+			<div class="row">
+
+				<div class="large-6 columns">
+					<input type="text" name="name" placeholder="Name">
+				</div>
+
+				<div class="large-6 columns">
+					<input type="submit" class="button small expand" value="New Group">
+				</div>
+			
+			</div>
+		</form>	
+	</div>
+</div>
+
+{{else}}
+
+{{#currentBills}}
+
+<div class="row">
+	<div class="large-12 columns panel">
+		<div class="row">
+			<div class="large-8 columns">
+				<h4>{{name}}</h4>
+			</div>
+			<div class="large-4 columns">
+				<a class="right" on-click="deleteBill">Delete</a>
+			</div>
+		</div>
+		
+		<div class="vspace"></div>
+		
+		<div class="row">
+			
+			<div class="large-11 columns">
+				{{#if payers.length < 2}} 
+					{{#payers}}
+						<a class="button expand{{#if paid == 'true'}} success{{/if}}" on-click="togglePaid">
+							{{memberNameById(userId)}}
+							{{#if paid == 'true'}}
+								paid {{amount}}
+							{{else}}
+								owes {{amount}}
+							{{/if}}
+						</a>
+					{{/}}
+				{{else}}
+					<ul class="button-group even-{{payers.length}}">
+						{{#payers}}
+							<li><a class="button{{#if paid == 'true'}} success{{/if}}" on-click="togglePaid">
+								{{memberNameById(userId)}}
+								{{#if paid == 'true'}}
+									paid {{amount/(payers.length)}}
+								{{else}}
+									owes {{amount/(payers.length)}}
+								{{/if}}
+							</a></li>
+						{{/}}
+					</ul>
+				{{/if}}	
+			</div>
+			
+			<div class="large-1 columns">
+				<a class="button secondary expand" data-dropdown="memberDropdown{{_id}}" aria-controls="memberDropdown{{_id}}" aria-expanded="false"><strong>+</strong></a>
+				<ul id="memberDropdown{{_id}}" class="f-dropdown" data-dropdown-content aria-hidden="true" tabindex="-1">
+					<li><a on-click="addAllMembersToBill"><strong>All</strong></a></li>
+					{{#dropdownDataForBill(.)}}
+						<li><a on-click="addGroupMemberToBill">{{name}}</a></li>
+					{{/}}
+					<li><a data-reveal-id="addMemberModal">More ...</a></li>
+				</ul>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+{{/}}
+
+<div class="row">
+	<div class="large-12 columns panel">
+		<form id="newBillForm">
+			<div class="row">
+
+				<div class="large-4 columns">
+					<input type="text" name="name" placeholder="Name">
+				</div>
+
+				<div class="large-4 columns">
+					<input type="text" name="amount" placeholder="Amount">
+				</div>
+
+				<div class="large-4 columns">
+					<input type="submit" class="button expand" value="New Bill">
+				</div>
+			
+			</div>
+		</form>	
+	</div>
+</div>
+
+{{/if}}
+
+
+<div id="addMemberModal" class="reveal-modal tiny" data-reveal aria-labelledby="addMemberModal" aria-hidden="true" role="dialog">
+	<div class="row">
+		<div class="large-12 columns">
+			<label>Search by email:
+				<input id="addMemberModalInput" type="text" placeholder="Email">
+			</label>
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-12 columns">
+			<ul>
+				{{#userSearchResults}}
+					<li><a on-click="addMemberToCurrentGroup">{{name}} ({{email}})</a></li>
+				{{/}}
+			</ul>
+		</div>
+	</div>
+</div>

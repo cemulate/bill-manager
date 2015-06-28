@@ -1,4 +1,16 @@
+body {
+	font-family: "Open Sans", sans-serif;
+}
+
+div.vspace {
+	height: 10px;
+}
+
 .row.full-width {
 	width: 100%;
 	max-width: 100%;
+}
+
+.row.wider {
+	width: 1280px;
 }

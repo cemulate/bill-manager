@@ -6,3 +6,6 @@ venv
 *.sublime-workspace
 *.layout
 *.bat
+
+node_modules
+*.db
