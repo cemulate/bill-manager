@@ -1,17 +1,17 @@
-var express         = require('express')
+var express = require('express')
 
-var passport        = require('passport');
-var LocalStrategy   = require('passport-local').Strategy;
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
 
-var cookieParser 	= require('cookie-parser');
-var session        	= require('express-session');
-var bodyParser 		= require('body-parser');
+var cookieParser = require('cookie-parser');
+var session = require('express-session');
+var bodyParser = require('body-parser');
 
-var Datastore		= require('nedb');
+var Datastore = require('nedb');
 
-var bcrypt			= require('bcrypt-nodejs');
+var bcrypt = require('bcrypt-nodejs');
 
-var _ 				= require('underscore');
+var _ = require('underscore');
 
 app = express();
 
