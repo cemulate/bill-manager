@@ -20,10 +20,15 @@ $.when(
 			currentGroupMembers: null,
 			currentBills: [],
 			groups: [],
-			userSearchResults: []
+			userSearchResults: [],
+
+			moment: moment // Give templates access to moment
 		}
 	});
 
+	// Ractive helper functions
+
+	// Grab the user name from a user id
 	ractive.set("memberNameById", function(id) {
 		var members = ractive.get("currentGroupMembers");
 		if (members) {
@@ -37,11 +42,13 @@ $.when(
 	});
 
 	// An awful hack because Ractive doesn't allow access to the parent scope inside a section (#)
-	ractive.set("dropdownDataForBill", function(bill) {
+	ractive.set("dropdownDataForBill", function(billId) {
+		if (!billId) return {};
+		var bill = _.find(this.get("currentBills"), function(x) {return x._id == billId});
 		var currentGroupMembers = this.get("currentGroupMembers");
 		var data = [];
 		_.each(currentGroupMembers, function(gm) {
-			if (_.indexOf(bill.payers, gm._id) == -1) {
+			if (_.indexOf(_.map(bill.payers, function(x) {return x._id}), gm._id) == -1) {
 				data.push({
 					billId: bill._id,
 					userId: gm._id,
@@ -51,6 +58,12 @@ $.when(
 		});
 		return data;
 	});
+
+	ractive.set("formatMoney", function(amountString) {
+		return "$" + parseInt(amountString).toFixed(2);
+	})
+
+	// AJAX form submission
 
 	$(document).on("submit", "#loginForm", function(event) {
 		$.post('/login', $("#loginForm").serialize(), function(data) {
@@ -67,8 +80,9 @@ $.when(
 		values.owner = ractive.get("currentGroup._id");
 		values.payers = [{
 			userId: ractive.get("currentUser._id"),
-			paid: false
+			paid: "owner"
 		}];
+		values.date = new Date().getTime();
 		$.post('/bills', values, function(data) {
 			refreshBills();
 		});
@@ -88,12 +102,15 @@ $.when(
 		event.preventDefault();
 	});
 
+
+	// Request a user search by name
 	var userSearch = function(name) {
 		$.get('/users/' + name, function(data) {
 			ractive.set("userSearchResults", data);
 		});
 	}
 
+	// Trigger a user search when the user stops typing
 	// https://github.com/dennyferra/TypeWatch
 	$("#addMemberModalInput").typeWatch({
 		callback: function () {
@@ -104,43 +121,48 @@ $.when(
 		captureLength: 0
 	});
 
+	// See if a session exists; log in
 	$.get('/login').done(function (data) {
 		ractive.set("currentUser", data);
 	}).fail(function (xhr, status, error) {
 		ractive.set("currentUser", null);
 	});
 
+	// Fetch the groups for the logged in user
 	var refreshGroups = function() {
 		$.get('/groups', function(data) {
-			console.log(data);
 			ractive.set("groups", data);
 		});
 	};
 
+	// Fetch the bills for the current group
 	var refreshBills = function() {
 		if (ractive.get("currentGroup")) {
 			$.get('/bills/' + ractive.get("currentGroup._id"), function(data) {
 				ractive.set("currentBills", data);
 				// Re-foundation the document so newly rendered JS dropdowns will work ~10ms later (this is dirty af help pls)
-				_.debounce(function() { console.log("Hey"); $(document).foundation(); }, 10)();
+				_.debounce(function() { $(document).foundation(); }, 10)();
 			});
 		} else {
 			ractive.set("currentBills", []);
 		}
 	};
 
+	// Fetch the members of the current group
 	var populateMembers = function() {
 		$.get('/members/' + ractive.get("currentGroup._id"), function(data) {
 			ractive.set("currentGroupMembers", data);
 		});
 	};
 
+	// When the user logs in with a valid user, refresh the group list
 	ractive.observe("currentUser", function(newVal, oldVal, keypath) {
 		if (this.get("currentUser")) {
 			refreshGroups();
 		}
 	});
 
+	// Set the current group
 	ractive.on("selectGroup", function(event) {
 		var g = this.get(event.keypath);
 		this.set("currentGroup", g);
@@ -148,6 +170,7 @@ $.when(
 		refreshBills();
 	});
 
+	// Submit a new group
 	ractive.on("newGroup", function(event) {
 		$.post('/groups', {
 			name: "TestGroup",
@@ -158,6 +181,7 @@ $.when(
 		});
 	});
 
+	// Delete a group
 	ractive.on("deleteGroup", function(event) {
 		$.ajax('/groups', {
 			method: "DELETE",
@@ -170,23 +194,7 @@ $.when(
 		});
 	});
 
-	ractive.on("newBill", function(event) {
-		$.post('/bills', {
-			name: "Test",
-			amount: 100,
-			owner: this.get("currentGroup._id"),
-			payers: [{
-				userId: this.get("currentUser._id"),
-				paid: false
-			}, {
-				userId: this.get("currentUser._id"),
-				paid: true
-			}]
-		}, function(data) {
-			refreshBills();
-		});
-	});
-
+	// Delete a bill
 	ractive.on("deleteBill", function(event) {
 		$.ajax('/bills', {
 			method: "DELETE",
@@ -199,6 +207,7 @@ $.when(
 		});
 	});
 
+	// Add a group member to a bill
 	ractive.on("addGroupMemberToBill", function(event) {
 
 		// Event context: {userId, billId, name} because of dropdownContentForBill hack (eeeeuuuughh)
@@ -210,11 +219,10 @@ $.when(
 		if (!_.contains(payerIds, event.context.userId)) {
 			payers.push({
 				userId: event.context.userId,
-				paid: false
+				paid: "false"
 			});
 			var setKeypath = "currentBills." + bIndex + ".payers";
 			this.set(setKeypath, payers);
-			console.log(bill);
 
 			$.ajax('/bills', {
 				method: "PUT",
@@ -226,10 +234,19 @@ $.when(
 		}
 	});
 
+	// Add all the group members to a bill
 	ractive.on("addAllMembersToBill", function(event) {
 		var bill = event.context;
-		bill.payers = _.map(this.get("currentGroupMembers"), function(x) {return {userId: x._id, paid: false}});
-		console.log(bill);
+
+		_.each(this.get("currentGroupMembers"), function(member) {
+			if (!_.contains(_.map(bill.payers, function(x) {return x.userId}), member._id)) {
+				bill.payers.push({
+					userId: member._id,
+					paid: "false"
+				});
+			}
+		});
+
 		$.ajax('/bills', {
 			method: "PUT",
 			data: {
@@ -242,6 +259,7 @@ $.when(
 		});
 	});
 
+	// Add a member to the current group
 	ractive.on("addMemberToCurrentGroup", function(event) {
 		var current = this.get("currentGroup").members;
 		if (!_.contains(current, event.context._id)) {
@@ -255,9 +273,9 @@ $.when(
 		$("#addMemberModal").foundation("reveal", "close");
 	});
 
+	// Mark a user paid/not paid on a bill
 	ractive.on("togglePaid", function(event) {
 		var current = (event.context.paid == "true");
-		console.log(event);
 		this.set(event.keypath + ".paid", (!current).toString());
 
 		var components = event.keypath.split(".");

@@ -14,3 +14,15 @@ div.vspace {
 .row.wider {
 	width: 1280px;
 }
+
+form.form-elements-no-bottom input {
+	margin-bottom: 0px;
+}
+
+.gray-text {
+	color: gray;
+}
+
+input.taller {
+	height: 45px;
+}
