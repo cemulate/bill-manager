@@ -1,0 +1,20 @@
+{
+	"name": "bill-manager",
+	"version": "0.1.0",
+	"description": "Manage and split bills amongst groups of people",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/cemulate/bill-manager"
+	},
+	"devDependencies": {
+		"express": "*",
+		"passport": "*",
+		"passport-local": "*",
+		"cookie-parser": "*",
+		"express-session": "*",
+		"body-parser": "*",
+		"nedb": "*",
+		"bcrypt-nodejs": "*",
+		"underscore": "*"
+	},
+}
