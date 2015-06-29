@@ -44,7 +44,10 @@ passport.use(new LocalStrategy({
 
 	usersdb.find({email: email}, function(err, docs) {
 		if (!docs[0]) done(null, false, {error: 'User does not exist'});
-		done(null, docs[0]);
+		if (bcrypt.compareSync(password, docs[0].phash)) {
+			done(null, docs[0]);
+		}
+		done(null, false, {error: 'Incorrect password'});
 	});
 
 }));
