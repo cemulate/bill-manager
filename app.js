@@ -82,7 +82,7 @@ app.post('/login', passport.authenticate('local'), function(req, res, next) {
 app.post('/register', function(req, res, next) {
 	usersdb.find({email: req.body.email}, function(err, docs) {
 		if (!docs[0]) {
-			usersdb.insert({email: req.body.email, phash: bcrypt.hashSync(req.body.password)});
+			usersdb.insert({email: req.body.email, phash: bcrypt.hashSync(req.body.password), name: req.body.name});
 			res.send("OK");
 		} else {
 			res.status(400).send("User already exists");
@@ -90,17 +90,22 @@ app.post('/register', function(req, res, next) {
 	});
 });
 
-// Get the current user
-app.get('/login', function(req, res, next) {
+// Halts the request passing through with a 401 if there is no user logged in
+var auth = function(req, res, next) {
 	if (req.user) {
-		res.send(req.user);
+		return next();
 	} else {
 		res.status(401).send("Must login");
 	}
+};
+
+// Get the current user
+app.get('/login', auth, function(req, res, next) {
+	res.send(req.user);
 });
 
 // Get up to 10 users whose name contains 'name'
-app.get('/users/:name', function(req, res, next) {
+app.get('/users/:name', auth, function(req, res, next) {
 	usersdb.find({$where: function() {return this.name.indexOf(req.params.name) > -1}}).limit(10).exec(function(err, results) {
 		res.send(results);
 	});
@@ -108,14 +113,14 @@ app.get('/users/:name', function(req, res, next) {
 
 // Make a user a member of a group
 // request parameters: {userId, groupId}
-app.post('/users/', function(req, res, next) {
+app.post('/users/', auth, function(req, res, next) {
 	groupsdb.update({_id: req.body.groupId}, {$addToSet: {members: req.body.userId}}, {}, function(err, ur) {
 		res.send("OK");
 	});
 });
 
 // Returns groups for which the currently logged in user is a member
-app.get('/groups', function(req, res, next) {
+app.get('/groups', auth, function(req, res, next) {
 	if (req.user) {
 		groupsdb.find({$where: function() {return _.contains(this.members, req.user._id)}}, function(err, groups) {
 			res.send(groups);
@@ -128,7 +133,7 @@ app.get('/groups', function(req, res, next) {
 
 // Create a new group
 // request parameters: {<group parameters>}
-app.post('/groups', function(req, res, next) {
+app.post('/groups', auth, function(req, res, next) {
 	if (req.user) {
 		groupsdb.insert(req.body, function(err, nr) {
 			res.send("OK");
@@ -140,7 +145,7 @@ app.post('/groups', function(req, res, next) {
 
 // Update a group
 // request parameters: {id, newGroup}
-app.put('/groups', function(req, res, next) {
+app.put('/groups', auth, function(req, res, next) {
 	if (req.user) {
 		groupsdb.update({_id: req.body.id}, req.body.newGroup, {}, function(err, ur) {
 			res.send("OK");
@@ -152,7 +157,7 @@ app.put('/groups', function(req, res, next) {
 
 // Delete a group
 // request parameters: {id}
-app.delete('/groups', function(req, res, next) {
+app.delete('/groups', auth, function(req, res, next) {
 	if (req.user) {
 		groupsdb.remove({_id: req.body.id}, {}, function(err, nr) {
 			res.send("OK");
@@ -163,7 +168,7 @@ app.delete('/groups', function(req, res, next) {
 });
 
 // Get the bills associated with the group of id 'groupId'
-app.get('/bills/:groupId', function(req, res, next) {
+app.get('/bills/:groupId', auth, function(req, res, next) {
 	billsdb.find({owner: req.params.groupId}).sort({date: -1}).exec(function(err, bills) {
 		res.send(bills);
 	});
@@ -171,14 +176,14 @@ app.get('/bills/:groupId', function(req, res, next) {
 
 // Create a new bill
 // request parameters: {<bill parameters>}
-app.post('/bills', function(req, res, next) {
+app.post('/bills', auth, function(req, res, next) {
 	billsdb.insert(req.body);
 	res.send("OK");
 });
 
 // Update a bill
 // request parameters: {id, replacement}
-app.put('/bills', function(req, res, next) {
+app.put('/bills', auth, function(req, res, next) {
 	billsdb.update({_id: req.body.id}, req.body.replacement, {}, function(err, ur) {
 		res.send("OK");
 	});
@@ -186,14 +191,14 @@ app.put('/bills', function(req, res, next) {
 
 // Delete a bill
 // request parameters: {id}
-app.delete('/bills', function(req, res, next) {
+app.delete('/bills', auth, function(req, res, next) {
 	billsdb.remove({_id: req.body.id}, {}, function(err, nr) {
 		res.send("OK");
 	});
 });
 
 // Get the users that are responsible for paying the bill with id 'billId'
-app.get('/payers/:billId', function(req, res, next) {
+app.get('/payers/:billId', auth, function(req, res, next) {
 	billsdb.find({_id: req.params.billId}, function(err, bills) {
 		usersdb.find({_id: {$in: bills[0].payers}}, function(err, users) {
 			res.send(users);
@@ -202,7 +207,7 @@ app.get('/payers/:billId', function(req, res, next) {
 });
 
 // Get the members of the group with id 'groupId'
-app.get('/members/:groupId', function(req, res, next) {
+app.get('/members/:groupId', auth, function(req, res, next) {
 	groupsdb.find({_id: req.params.groupId}, function(err, groups) {
 		usersdb.find({_id: {$in: groups[0].members}}, function(err, users) {
 			res.send(users);
