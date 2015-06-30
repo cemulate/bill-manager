@@ -77,6 +77,12 @@ app.post('/login', passport.authenticate('local'), function(req, res, next) {
 	res.send(req.user);
 });
 
+// Log out
+app.get('/logout', function(req, res, next) {
+	req.logout();
+	res.redirect('/');
+});
+
 // Register a new user by email
 // request parameters: {email}
 app.post('/register', function(req, res, next) {

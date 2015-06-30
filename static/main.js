@@ -21,6 +21,9 @@ $.when(
 			currentBills: [],
 			groups: [],
 			userSearchResults: [],
+			password: "",
+			passwordConfirm: "",
+			registeredSuccessfully: false,
 
 			moment: moment // Give templates access to moment
 		}
@@ -69,6 +72,26 @@ $.when(
 		$.post('/login', $("#loginForm").serialize(), function(data) {
 			ractive.set("currentUser", data);
 		});
+		event.preventDefault();
+	});
+
+	$(document).on("submit", "#registerForm", function(event) {
+		values = {}
+		$.each($('#loginForm').serializeArray(), function(i, field) {
+			values[field.name] = field.value;
+		});
+		$.each($('#registerForm').serializeArray(), function(i, field) {
+			values[field.name] = field.value;
+		});
+		if (values.password == values.passwordConfirm) {
+			$.post('/register', {
+				name: values.name,
+				email: values.email,
+				password: values.password
+			}, function(data) {
+				ractive.set("registeredSuccessfully", true);
+			});
+		}
 		event.preventDefault();
 	});
 

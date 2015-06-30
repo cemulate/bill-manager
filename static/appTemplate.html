@@ -10,6 +10,7 @@
 			{{#if currentUser}}
 			
 			<li><a>Logged in as {{currentUser.name}}</a></li>
+			<li><a href="/logout">Log out</a></li>
 
 			{{/if}}
 		</ul>
@@ -30,7 +31,7 @@
 				</div>
 
 				<div class="large-4 columns">
-					<input class="taller" type="password" name="password" placeholder="Password">
+					<input class="taller" type="password" name="password" placeholder="Password" value="{{password}}">
 				</div>
 
 				<div class="large-4 columns">
@@ -41,6 +42,37 @@
 		</form>	
 	</div>
 </div>
+
+<div class="row">
+	<div class="large-12 columns">
+		<p>Or, provide a name and confirm your password to register: {{#if (passwordConfirm != "") && (password != passwordConfirm)}} <span><em>(password mismatch)</em></span> {{/if}}</p>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-12 columns panel">
+		<form id="registerForm" class="form-elements-no-bottom">
+			<div class="row">
+
+				<div class="large-4 columns">
+					<input class="taller" type="text" name="name" placeholder="Name">
+				</div>
+
+				<div class="large-4 columns">
+					<input class="taller" type="password" name="passwordConfirm" placeholder="Password (again)" value="{{passwordConfirm}}">
+				</div>
+
+				<div class="large-4 columns">
+					<input type="submit" {{#if registeredSuccessfully}} disabled {{/if}} 
+					class="button small expand{{#if registeredSuccessfully}} success {{/if}}" value="{{registeredSuccessfully ? 'Registered Successfully' : 'Register'}}">
+				</div>
+			
+			</div>
+		</form>	
+	</div>
+</div>
+
+
 
 {{/if}}
 
