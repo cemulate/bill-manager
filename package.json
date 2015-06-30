@@ -2,11 +2,18 @@
 	"name": "bill-manager",
 	"version": "0.1.0",
 	"description": "Manage and split bills amongst groups of people",
+	"main": "app.js"
+	"scripts": {
+		"start": "node app.js"
+	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/cemulate/bill-manager"
 	},
-	"devDependencies": {
+	"engines": {
+		"node": "*"
+	},
+	"dependencies": {
 		"express": "*",
 		"passport": "*",
 		"passport-local": "*",
@@ -17,4 +24,10 @@
 		"bcrypt-nodejs": "*",
 		"underscore": "*"
 	},
+	"keywords": [
+		"node",
+		"heroku",
+		"express
+	],
+	"license": "MIT"
 }
