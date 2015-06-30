@@ -225,9 +225,10 @@ app.get('/members/:groupId', auth, function(req, res, next) {
 // Finally, serve static files from the 'static' directory
 app.use(express.static('static'));
 
-app.set('port', (process.env.PORT || 8000));
+var serverPort = process.env.OPENSHIFT_NODEJS_PORT || 8000;
+var serverIPAddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 
 // Launch the app
-app.listen(app.get('port'), function() {
+app.listen(serverPort, serverIPAddress, function() {
 	console.log('Server running at port ', app.get('port'));
 });
