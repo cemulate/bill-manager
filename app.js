@@ -13,15 +13,21 @@ var bcrypt = require('bcrypt-nodejs');
 
 var _ = require('underscore');
 
+var path = require('path');
+
 app = express();
 
 // Connect to databases
-usersdb = new Datastore({filename: 'users.db'});
-groupsdb = new Datastore({filename: 'groups.db'});
-billsdb = new Datastore({filename: 'bills.db'});
+var prefix = app.env.OPENSHIFT_DATA_DIR || '/';
+var usersdb = new Datastore({filename: path.join(prefix, 'users.db')});
+var groupsdb = new Datastore({filename: path.join(prefix, 'groups.db')});
+var billsdb = new Datastore({filename: path.join(prefix, 'bills.db')});
 usersdb.loadDatabase();
 groupsdb.loadDatabase();
 billsdb.loadDatabase();
+usersdb.persistence.setAutocompactionInterval(60000);
+groupsdb.persistence.setAutocompactionInterval(60000);
+billsdb.persistence.setAutocompactionInterval(60000);
 
 // Configure passport
 
