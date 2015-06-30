@@ -2,7 +2,7 @@
 	"name": "bill-manager",
 	"version": "0.1.0",
 	"description": "Manage and split bills amongst groups of people",
-	"main": "app.js"
+	"main": "app.js",
 	"scripts": {
 		"start": "node app.js"
 	},
