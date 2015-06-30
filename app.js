@@ -18,7 +18,7 @@ var path = require('path');
 app = express();
 
 // Connect to databases
-var prefix = app.env.OPENSHIFT_DATA_DIR || '/';
+var prefix = process.env.OPENSHIFT_DATA_DIR || '/';
 var usersdb = new Datastore({filename: path.join(prefix, 'users.db')});
 var groupsdb = new Datastore({filename: path.join(prefix, 'groups.db')});
 var billsdb = new Datastore({filename: path.join(prefix, 'bills.db')});
@@ -236,5 +236,5 @@ var serverIPAddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 
 // Launch the app
 app.listen(serverPort, serverIPAddress, function() {
-	console.log('Server running at port ', app.get('port'));
+	console.log('Server running');
 });
