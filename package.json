@@ -22,7 +22,8 @@
 		"body-parser": "*",
 		"nedb": "*",
 		"bcrypt-nodejs": "*",
-		"underscore": "*"
+		"underscore": "*",
+		"path": "*"
 	},
 	"keywords": [
 		"node",
