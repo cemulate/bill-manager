@@ -42,9 +42,10 @@
 		<div id="appContainer"></div>
 
 		<script src="/foundation-5.5.1/js/foundation.min.js"></script>
+		<script src="/foundation-5.5.1/js/foundation/foundation.topbar.js"></script>
 		
 		<script>
-			$(document).foundation();
+			_.debounce(function () { $(document).foundation(); }, 100)();
 		</script>
 
 	</body>

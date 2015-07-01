@@ -168,7 +168,7 @@ $.when(
 			$.get('/bills/' + ractive.get("currentGroup._id"), function(data) {
 				ractive.set("currentBills", data);
 				// Re-foundation the document so newly rendered JS dropdowns will work ~10ms later (this is dirty af help pls)
-				_.debounce(function() { $(document).foundation(); }, 10)();
+				_.debounce(function() { $(document).foundation(); }, 100)();
 			});
 		} else {
 			ractive.set("currentBills", []);

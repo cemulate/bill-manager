@@ -1,8 +1,9 @@
-<nav class="top-bar">
+<nav class="top-bar" data-topbar role="navigation">
 	<ul class="title-area">
 		<li class="name">
 			<h1><a href="/">Bill Manager</a></h1>
 		</li>
+		<li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
 	</ul>
 
 	<section class="top-bar-section">
@@ -239,6 +240,7 @@
 			</ul>
 		</div>
 	</div>
+	<a class="close-reveal-modal" aria-label="Close">&#215;</a>
 </div>
 
 <div id="reconcileModal" class="reveal-modal tiny" data-reveal aria-labelledby="reconcileModal" aria-hidden="true" role="dialog">
@@ -277,4 +279,5 @@
 			</div>
 		</div>
 	{{/if}}
+	<a class="close-reveal-modal" aria-label="Close">&#215;</a>
 </div>
