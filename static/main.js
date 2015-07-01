@@ -66,8 +66,8 @@ $.when(
 		return data;
 	});
 
-	ractive.set("formatMoney", function(amountString) {
-		return "$" + parseFloat(amountString).toFixed(2);
+	ractive.set("formatMoney", function(amountOrString) {
+		return "$" + parseFloat(amountOrString).toFixed(2);
 	})
 
 	// AJAX form submission
