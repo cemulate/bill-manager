@@ -20,10 +20,14 @@ $.when(
 			currentGroupMembers: null,
 			currentBills: [],
 			groups: [],
+
 			userSearchResults: [],
+
 			password: "",
 			passwordConfirm: "",
 			registeredSuccessfully: false,
+
+			reconcileData: null,
 
 			moment: moment // Give templates access to moment
 		}
@@ -171,6 +175,19 @@ $.when(
 		}
 	};
 
+	var updateBills = function() {
+		var bills = ractive.get("currentBills");
+		_.each(bills, function(b) {
+			$.ajax('/bills', {
+				method: "PUT",
+				data: {
+					id: b._id,
+					replacement: b
+				}
+			});
+		});
+	}
+
 	// Fetch the members of the current group
 	var populateMembers = function() {
 		$.get('/members/' + ractive.get("currentGroup._id"), function(data) {
@@ -313,6 +330,73 @@ $.when(
 				replacement: bill
 			}
 		});
+	});
+
+	ractive.on("clearReconcileData", function(event) {
+		this.set("reconcileData", null);
+	});
+
+	ractive.on("reconcileWith", function(event, actuallyMarkPaid) {
+		var bills = ractive.get("currentBills");
+
+		var me = ractive.get("currentUser");
+		var other = actuallyMarkPaid ? ractive.get("reconcileData.otherUser") : event.context;
+		var owesOther = 0;
+
+		for (var i = 0; i < bills.length; i ++) {
+			var b = bills[i];
+
+			var splitAmount = (parseFloat(b.amount) / b.payers.length);
+
+			var otherIndex = -1;
+			var meIndex = -1;
+			for (var j = 0; j < b.payers.length; j ++) {
+				if (b.payers[j].userId == me._id) meIndex = j;
+				if (b.payers[j].userId == other._id) otherIndex = j;
+			}
+
+			if (otherIndex == -1) return;
+
+			var otherPaid = b.payers[otherIndex].paid;
+			var mePaid = b.payers[meIndex].paid;
+			
+			// If the other user isn't on this bill, nothing to do
+			if (!otherPaid) return;
+
+			if (mePaid == "owner") {
+				// I'm responsible for this bill
+				if (!(otherPaid == "true")) {
+					// And the other user hasn't paid. He owes me.
+					owesOther -= splitAmount;
+					if (actuallyMarkPaid) {
+						// Actually reconcile by marking him as paid
+						ractive.set("currentBills." + i + ".payers." + otherIndex + ".paid", "true");
+					}
+				}
+			} else if (otherPaid == "owner") {
+				// The other user was the one responsible for this bill
+				if (!(mePaid == "true")) {
+					// And I haven't paid. I owe him.
+					owesOther += splitAmount;
+					if (actuallyMarkPaid) {
+						// Actually reconcile by marking me as paid
+						ractive.set("currentBills." + i + ".payers." + meIndex + ".paid", "true");
+					}
+				}
+			}
+		}
+
+		if (!actuallyMarkPaid) {
+			// Just set the reconcile data
+			this.set("reconcileData", {
+				otherUser: other,
+				owesOther: owesOther
+			});
+		} else {
+			updateBills();
+			this.set("reconcileData", null);
+			$("#reconcileModal").foundation("reveal", "close");
+		}
 	});
 
 });

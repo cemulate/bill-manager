@@ -9,6 +9,7 @@
 		<ul class="right">
 			{{#if currentUser}}
 			
+			{{#if currentGroup}} <li><a on-click="clearReconcileData" data-reveal-id="reconcileModal"><strong>Reconcile ...</strong></a></li> {{/if}}
 			<li><a>Logged in as {{currentUser.name}}</a></li>
 			<li><a href="/logout">Log out</a></li>
 
@@ -238,4 +239,38 @@
 			</ul>
 		</div>
 	</div>
+</div>
+
+<div id="reconcileModal" class="reveal-modal tiny" data-reveal aria-labelledby="reconcileModal" aria-hidden="true" role="dialog">
+	<div class="row">
+		<div class="large-12 columns">
+			<p>Choose user to reconcile with:</p>
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-12 columns">
+			<ul>
+				{{#currentGroupMembers}}
+					{{#if currentUser._id != _id}} <li><a on-click="reconcileWith">{{name}}</a></li> {{/if}}
+				{{/}}
+			</ul>
+		</div>
+	</div>
+	{{#if reconcileData}}
+		<div class="row">
+			<div class="large-12 columns">
+				<p>You owe {{reconcileData.otherUser.name}}</p>
+			</div>
+		</div>
+		<div class="row">
+			<div class="large-12 columns panel">
+				<h4>{{formatMoney(reconcileData.owesOther)}}</h4>
+			</div>
+		</div>
+		<div class="row">
+			<div class="large-12 columns">
+				<a on-click="reconcileWith:1" class="button small expand">Confirm and mark related instances as paid</a>
+			</div>
+		</div>
+	{{/if}}
 </div>
