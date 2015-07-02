@@ -29,6 +29,8 @@ $.when(
 
 			reconcileData: null,
 
+			newBillFormError: false,
+
 			moment: moment // Give templates access to moment
 		}
 	});
@@ -104,15 +106,20 @@ $.when(
 		$.each($('#newBillForm').serializeArray(), function(i, field) {
 			values[field.name] = field.value;
 		});
-		values.owner = ractive.get("currentGroup._id");
-		values.payers = [{
-			userId: ractive.get("currentUser._id"),
-			paid: "owner"
-		}];
-		values.date = new Date().getTime();
-		$.post('/bills', values, function(data) {
-			refreshBills();
-		});
+		if ($.isNumeric(values.amount)) {
+			values.owner = ractive.get("currentGroup._id");
+			values.payers = [{
+				userId: ractive.get("currentUser._id"),
+				paid: "owner"
+			}];
+			values.date = new Date().getTime();
+			$.post('/bills', values, function(data) {
+				refreshBills();
+			});
+			ractive.set("newBillFormError", false);
+		} else {
+			ractive.set("newBillFormError", true);
+		}
 		event.preventDefault();
 	});
 
@@ -128,7 +135,6 @@ $.when(
 		});
 		event.preventDefault();
 	});
-
 
 	// Request a user search by name
 	var userSearch = function(name) {

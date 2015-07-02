@@ -61,13 +61,15 @@ passport.use(new LocalStrategy({
 // Stack middleware
 
 // Standard express middleware for parsing the request data into req.body
-app.use(bodyParser());
+app.use(bodyParser.urlencoded());
 app.use(cookieParser());
 
 
 // Configure sessions
 app.use(session({
-	secret: 'gfslieVZugRnpzkDWu1XkQwgf6iJVRpXwsMOsmBoi8t50e012C6k9cajNVt5zJT'
+	secret: 'gfslieVZugRnpzkDWu1XkQwgf6iJVRpXwsMOsmBoi8t50e012C6k9cajNVt5zJT',
+	resave: true,
+	saveUninitialized: true
 }));
 
 // Install the passport middleware
@@ -105,6 +107,7 @@ app.post('/register', function(req, res, next) {
 // Halts the request passing through with a 401 if there is no user logged in
 var auth = function(req, res, next) {
 	if (req.user) {
+		console.log("Authenticated request from ", req.user.email);
 		return next();
 	} else {
 		res.status(401).send("Must login");
@@ -133,50 +136,38 @@ app.post('/users/', auth, function(req, res, next) {
 
 // Returns groups for which the currently logged in user is a member
 app.get('/groups', auth, function(req, res, next) {
-	if (req.user) {
-		groupsdb.find({$where: function() {return _.contains(this.members, req.user._id)}}, function(err, groups) {
-			res.send(groups);
-		});
-	} else {
-		res.status(401).send("Must login");
-	}
+	groupsdb.find({$where: function() {return _.contains(this.members, req.user._id)}}, function(err, groups) {
+		if (err) return res.status(500).status("Database lookup error");
+		res.send(groups);
+	});
 });
 
 
 // Create a new group
 // request parameters: {<group parameters>}
 app.post('/groups', auth, function(req, res, next) {
-	if (req.user) {
-		groupsdb.insert(req.body, function(err, nr) {
-			res.send("OK");
-		});
-	} else {
-		res.status(401).send("Must login");
-	}
+	groupsdb.insert(req.body, function(err, nr) {
+		if (err) return res.status(500).send("Error adding group");
+		res.send("OK");
+	});
 });
 
 // Update a group
 // request parameters: {id, newGroup}
 app.put('/groups', auth, function(req, res, next) {
-	if (req.user) {
-		groupsdb.update({_id: req.body.id}, req.body.newGroup, {}, function(err, ur) {
-			res.send("OK");
-		});
-	} else {
-		res.status(401).send("Must login");
-	}
+	groupsdb.update({_id: req.body.id}, req.body.newGroup, {}, function(err, ur) {
+		if (err) return res.status(500).send("Error updating group");
+		res.send("OK");
+	});
 });
 
 // Delete a group
 // request parameters: {id}
 app.delete('/groups', auth, function(req, res, next) {
-	if (req.user) {
-		groupsdb.remove({_id: req.body.id}, {}, function(err, nr) {
-			res.send("OK");
-		});
-	} else {
-		res.status(401).send("Must login");
-	}
+	groupsdb.remove({_id: req.body.id}, {}, function(err, nr) {
+		if (err) return res.status(500).send("Error deleting group");
+		res.send("OK");
+	});
 });
 
 // Get the bills associated with the group of id 'groupId'
@@ -197,6 +188,7 @@ app.post('/bills', auth, function(req, res, next) {
 // request parameters: {id, replacement}
 app.put('/bills', auth, function(req, res, next) {
 	billsdb.update({_id: req.body.id}, req.body.replacement, {}, function(err, ur) {
+		if (err) return res.status(500).send("Error updating bill");
 		res.send("OK");
 	});
 })
@@ -205,6 +197,7 @@ app.put('/bills', auth, function(req, res, next) {
 // request parameters: {id}
 app.delete('/bills', auth, function(req, res, next) {
 	billsdb.remove({_id: req.body.id}, {}, function(err, nr) {
+		if (err) return res.status(500).send("Error deleting bill");
 		res.send("OK");
 	});
 });
