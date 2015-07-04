@@ -10,11 +10,15 @@ $.when(
 
 ).then(function () {
 
+	// Setup Ractive
+
 	ractive = new Ractive({
 		magic: false,
 		el: 'appContainer',
 		template: appTemplate,
 		data: {
+			appState: "groups", // {groups, ...}
+
 			currentUser: null,
 			currentGroup: null,
 			currentGroupMembers: null,
@@ -26,6 +30,7 @@ $.when(
 			password: "",
 			passwordConfirm: "",
 			registeredSuccessfully: false,
+			editedUserSuccessfully: false,
 
 			reconcileData: null,
 
@@ -78,6 +83,8 @@ $.when(
 		$.post('/login', $("#loginForm").serialize(), function(data) {
 			ractive.set("currentUser", data);
 		});
+		ractive.set("password", "");
+		ractive.set("passwordConfirm", "");
 		event.preventDefault();
 	});
 
@@ -136,6 +143,33 @@ $.when(
 		event.preventDefault();
 	});
 
+	$(document).on("submit", "#userEditForm", function(event) {
+		values = {}
+		$.each($('#userEditForm').serializeArray(), function(i, field) {
+			values[field.name] = (field.value == "") ? null : field.value;
+		});
+		
+		var replacement = {};
+		if (values.name) replacement.name = values.name;
+		if (values.email) replacement.email = values.email;
+		if (values.password) replacement.password = values.password;
+
+		if (values.password == values.passwordConfirm) {
+			$.ajax('/users', {
+				method: "PUT",
+				data: {
+					id: ractive.get("currentUser._id"),
+					update: replacement			
+				},
+				success: function() {
+					ractive.set("editedUserSuccessfully", true);
+					refreshCurrentUser();
+				}
+			});
+		}
+		event.preventDefault();
+	});
+
 	// Request a user search by name
 	var userSearch = function(name) {
 		$.get('/users/' + name, function(data) {
@@ -154,12 +188,17 @@ $.when(
 		captureLength: 0
 	});
 
+	// Refresh the info for the currently logged in user
+	var refreshCurrentUser = function() {
+		$.get('/login').done(function (data) {
+			ractive.set("currentUser", data);
+		}).fail(function (xhr, status, error) {
+			ractive.set("currentUser", null);
+		});
+	};
+
 	// See if a session exists; log in
-	$.get('/login').done(function (data) {
-		ractive.set("currentUser", data);
-	}).fail(function (xhr, status, error) {
-		ractive.set("currentUser", null);
-	});
+	refreshCurrentUser();
 
 	// Fetch the groups for the logged in user
 	var refreshGroups = function() {
@@ -206,25 +245,6 @@ $.when(
 		if (this.get("currentUser")) {
 			refreshGroups();
 		}
-	});
-
-	// Set the current group
-	ractive.on("selectGroup", function(event) {
-		var g = this.get(event.keypath);
-		this.set("currentGroup", g);
-		populateMembers();
-		refreshBills();
-	});
-
-	// Submit a new group
-	ractive.on("newGroup", function(event) {
-		$.post('/groups', {
-			name: "TestGroup",
-			members: [this.get("currentUser._id")],
-			bills: []
-		}, function(data) {
-			refreshGroups();
-		});
 	});
 
 	// Delete a group
@@ -404,5 +424,39 @@ $.when(
 			$("#reconcileModal").foundation("reveal", "close");
 		}
 	});
+
+	// Configure routing
+
+	var router = Router({
+		
+		'/': function() {
+			ractive.set("password", "");
+			ractive.set("passwordConfirm", "");
+
+			ractive.set("appState", "groups");
+			ractive.set("currentGroup", null);
+			refreshGroups();
+		},
+
+		'/groups/:groupId': function(groupId) {
+			var g = _.find(ractive.get("groups"), function(x) {return x._id == groupId});
+			ractive.set("appState", "groups");
+			ractive.set("currentGroup", g);
+			populateMembers();
+			refreshBills();
+		},
+
+		'/userPage': function() {
+			ractive.set("password", "");
+			ractive.set("passwordConfirm", "");
+
+			ractive.set("appState", "userPage");
+		}
+
+	});
+
+	router.init();
+
+	router.setRoute("");
 
 });

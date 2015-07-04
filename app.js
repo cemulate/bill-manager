@@ -92,7 +92,7 @@ app.get('/logout', function(req, res, next) {
 });
 
 // Register a new user by email
-// request parameters: {email}
+// request parameters: {email, password, name}
 app.post('/register', function(req, res, next) {
 	usersdb.find({email: req.body.email}, function(err, docs) {
 		if (!docs[0]) {
@@ -131,6 +131,23 @@ app.get('/users/:name', auth, function(req, res, next) {
 app.post('/users/', auth, function(req, res, next) {
 	groupsdb.update({_id: req.body.groupId}, {$addToSet: {members: req.body.userId}}, {}, function(err, ur) {
 		res.send("OK");
+	});
+});
+
+// Update a user
+// request parameters: {id, update (object containing the same fields as POST to /register)}
+app.put('/users/', auth, function(req, res, next) {
+
+	usersdb.findOne({_id: req.body.id}, function(err, user) {
+		var replacement = user;
+		if (req.body.update.name) replacement.name = req.body.update.name;
+		if (req.body.update.email) replacement.email = req.body.update.email;
+		if (req.body.update.password) replacement.phash = bcrypt.hashSync(req.body.update.password);
+
+		usersdb.update({_id: req.body.id}, replacement, {}, function(err, ur) {
+			if (err) return res.status(500).send("Error updating user");
+			res.send("OK");
+		});
 	});
 });
 

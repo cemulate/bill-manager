@@ -11,7 +11,7 @@
 			{{#if currentUser}}
 			
 			{{#if currentGroup}} <li><a on-click="clearReconcileData" data-reveal-id="reconcileModal"><strong>Reconcile ...</strong></a></li> {{/if}}
-			<li><a>Logged in as {{currentUser.name}}</a></li>
+			<li><a href="#/userPage">Logged in as {{currentUser.name}}</a></li>
 			<li><a href="/logout">Log out</a></li>
 
 			{{/if}}
@@ -20,6 +20,8 @@
 </nav>
 
 <hr>
+
+<!-- Display login regardless if no user -->
 
 {{#if !currentUser}}
 
@@ -74,162 +76,212 @@
 	</div>
 </div>
 
-
-
 {{/if}}
 
-{{#if !currentGroup}}
+{{#if appState == 'groups'}}
 
-{{#groups}}
+	{{#if !currentGroup}}
 
-<div class="row panel">
-	<div class="large-8 columns">
-		<h4><a on-click="selectGroup">{{name}}</a></h4>
-	</div>
-	<div class="large-4 columns">
-		<a class="right" on-click="deleteGroup">Delete</a>
-	</div>
-</div>
+		{{#groups}}
 
-{{/}}
-
-{{#if currentUser}}
-
-<div class="row">
-	<div class="large-12 columns panel">
-		<form id="newGroupForm" class="form-elements-no-bottom">
-			<div class="row">
-
-				<div class="large-6 columns">
-					<input class="taller" type="text" name="name" placeholder="Name" maxlength="30">
-				</div>
-
-				<div class="large-6 columns">
-					<input type="submit" class="button small expand" value="New Group">
-				</div>
-			
-			</div>
-		</form>	
-	</div>
-</div>
-
-{{/if}}
-
-{{else}}
-
-{{#currentBills:i}}
-
-<div class="row">
-	<div class="large-12 columns panel">
-		<div class="row">
+		<div class="row panel">
 			<div class="large-8 columns">
-				<h4>{{name}} ({{formatMoney(amount)}}) <span class="gray-text">&mdash; {{moment(parseInt(date)).format('MMMM Do')}}</span></h4>
+				<h4><a href="#/groups/{{_id}}">{{name}}</a></h4>
 			</div>
 			<div class="large-4 columns">
-				<a class="right" on-click="deleteBill">Delete</a>
+				<a class="right" on-click="deleteGroup">Delete</a>
 			</div>
 		</div>
-		
-		<div class="vspace"></div>
-		
+
+		{{/}}
+
+		{{#if currentUser}}
+
 		<div class="row">
-			
-			<div class="large-11 columns">
-				{{#if payers.length < 2}} 
-					{{#payers}}
-						<a {{#if paid == 'owner'}} disabled {{/if}} class="button expand{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
-							{{memberNameById(userId)}}
-							{{#if paid == 'true'}}
-								paid {{formatMoney(amount)}}
-							{{/if}}
-							{{#if paid == 'false'}}
-								owes {{formatMoney(amount)}}
-							{{/if}}
-							{{#if paid == 'owner'}}
-								<em>(paid bill)</em>
-							{{/if}}
+			<div class="large-12 columns panel">
+				<form id="newGroupForm" class="form-elements-no-bottom">
+					<div class="row">
 
-						</a>
-					{{/}}
-				{{else}}
-					<ul class="button-group even-{{payers.length}}">
-						{{#payers}}
-							<li><a {{#if paid == 'owner'}} disabled {{/if}} class="button{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
-								{{memberNameById(userId)}}
-								{{#if paid == 'true'}}
-									paid {{formatMoney(amount/(payers.length))}}
-								{{/if}}
-								{{#if paid == 'false'}}
-									owes {{formatMoney(amount/(payers.length))}}
-								{{/if}}
-								{{#if paid == 'owner'}}
-									<em>(paid bill)</em>
-								{{/if}}
-							</a></li>
-						{{/}}
-					</ul>
-				{{/if}}	
+						<div class="large-6 columns">
+							<input class="taller" type="text" name="name" placeholder="Name" maxlength="30">
+						</div>
+
+						<div class="large-6 columns">
+							<input type="submit" class="button small expand" value="New Group">
+						</div>
+					
+					</div>
+				</form>	
 			</div>
-			
-			<div class="large-1 columns">
-
-				<a class="button secondary expand" data-dropdown="memberDropdown{{i}}" aria-controls="memberDropdown{{i}}" aria-expanded="false"><strong>+</strong></a>
-
-				<!-- Foundation needs unique id's in order to setup the JS dropdowns, so append index in order to make these elements unique per-bill -->
-				<ul id="memberDropdown{{i}}" class="f-dropdown" data-dropdown-content aria-hidden="true" tabindex="-1">
-					
-					<li><a on-click="addAllMembersToBill"><strong>All</strong></a></li>
-					
-					<!-- Here, I would like to iterate through currentGroupMembers, in order to populate them in this dropdown, with {{#currentGroupMembers}},
-					but then, addGroupMemberToBill would need access to the current bill. It cannot get it in the event context, because the event context will
-					be currentGroupMembers.N -- it cannot be passed as an argument either, because ractive does not allow a construct like {{../_id}} to access
-					the parent scope explicitly. So we resort to this ugly hack that takes the id of the current bill and returns a structure to iterate over 
-					that 'saves' that bill id -->
-					{{#dropdownDataForBill(_id)}}
-						<li><a on-click="addGroupMemberToBill">{{name}}</a></li>
-					{{/}}
-					
-					<li><a data-reveal-id="addMemberModal">More ...</a></li>
-				</ul>
-			</div>
-
 		</div>
-	</div>
-</div>
 
-{{/}}
+		{{/if}}
 
-<div class="row">
-	<div class="large-12 columns panel">
-		<form id="newBillForm" class="form-elements-no-bottom">
-			<div class="row">
+	{{else}}
 
-				<div class="large-4 columns">
-					<input class="taller" type="text" name="name" placeholder="Name" maxlength="30">
+		{{#currentBills:i}}
+
+		<div class="row">
+			<div class="large-12 columns panel">
+				<div class="row">
+					<div class="large-8 columns">
+						<h4>{{name}} ({{formatMoney(amount)}}) <span class="gray-text">&mdash; {{moment(parseInt(date)).format('MMMM Do')}}</span></h4>
+					</div>
+					<div class="large-4 columns">
+						<a class="right" on-click="deleteBill">Delete</a>
+					</div>
 				</div>
+				
+				<div class="vspace"></div>
+				
+				<div class="row">
+					
+					<div class="large-11 columns">
+						{{#if payers.length < 2}} 
+							{{#payers}}
+								<a {{#if paid == 'owner'}} disabled {{/if}} class="button expand{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
+									{{memberNameById(userId)}}
+									{{#if paid == 'true'}}
+										paid {{formatMoney(amount)}}
+									{{/if}}
+									{{#if paid == 'false'}}
+										owes {{formatMoney(amount)}}
+									{{/if}}
+									{{#if paid == 'owner'}}
+										<em>(paid bill)</em>
+									{{/if}}
 
-				<div class="large-4 columns">
-					<input class="taller numbersOnly" type="text" name="amount" placeholder="Amount" maxlength="10">
-				</div>
+								</a>
+							{{/}}
+						{{else}}
+							<ul class="button-group even-{{payers.length}}">
+								{{#payers}}
+									<li><a {{#if paid == 'owner'}} disabled {{/if}} class="button{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
+										{{memberNameById(userId)}}
+										{{#if paid == 'true'}}
+											paid {{formatMoney(amount/(payers.length))}}
+										{{/if}}
+										{{#if paid == 'false'}}
+											owes {{formatMoney(amount/(payers.length))}}
+										{{/if}}
+										{{#if paid == 'owner'}}
+											<em>(paid bill)</em>
+										{{/if}}
+									</a></li>
+								{{/}}
+							</ul>
+						{{/if}}	
+					</div>
+					
+					<div class="large-1 columns">
 
-				<div class="large-4 columns">
-					<input type="submit" class="button small expand" value="New Bill">
+						<a class="button secondary expand" data-dropdown="memberDropdown{{i}}" aria-controls="memberDropdown{{i}}" aria-expanded="false"><strong>+</strong></a>
+
+						<!-- Foundation needs unique id's in order to setup the JS dropdowns, so append index in order to make these elements unique per-bill -->
+						<ul id="memberDropdown{{i}}" class="f-dropdown" data-dropdown-content aria-hidden="true" tabindex="-1">
+							
+							<li><a on-click="addAllMembersToBill"><strong>All</strong></a></li>
+							
+							<!-- Here, I would like to iterate through currentGroupMembers, in order to populate them in this dropdown, with {{#currentGroupMembers}},
+							but then, addGroupMemberToBill would need access to the current bill. It cannot get it in the event context, because the event context will
+							be currentGroupMembers.N -- it cannot be passed as an argument either, because ractive does not allow a construct like {{../_id}} to access
+							the parent scope explicitly. So we resort to this ugly hack that takes the id of the current bill and returns a structure to iterate over 
+							that 'saves' that bill id -->
+							{{#dropdownDataForBill(_id)}}
+								<li><a on-click="addGroupMemberToBill">{{name}}</a></li>
+							{{/}}
+							
+							<li><a data-reveal-id="addMemberModal">More ...</a></li>
+						</ul>
+					</div>
+
 				</div>
-			
 			</div>
-		</form>	
-	</div>
-</div>
+		</div>
 
-{{#if newBillFormError}}
+		{{/}}
+
+		<div class="row">
+			<div class="large-12 columns panel">
+				<form id="newBillForm" class="form-elements-no-bottom">
+					<div class="row">
+
+						<div class="large-4 columns">
+							<input class="taller" type="text" name="name" placeholder="Name" maxlength="30">
+						</div>
+
+						<div class="large-4 columns">
+							<input class="taller numbersOnly" type="text" name="amount" placeholder="Amount" maxlength="10">
+						</div>
+
+						<div class="large-4 columns">
+							<input type="submit" class="button small expand" value="New Bill">
+						</div>
+					
+					</div>
+				</form>	
+			</div>
+		</div>
+
+		{{#if newBillFormError}}
+
+		<div class="row">
+			<div class="large-12 columns">
+				<p><em>Enter a numeric value for bill amount</em></p>
+			</div>
+		</div>
+
+		{{/if}}
+
+	{{/if}}
+
+{{/if}}
+
+{{#if appState == 'userPage'}}
 
 <div class="row">
 	<div class="large-12 columns">
-		<p><em>Enter a numeric value for bill amount</em></p>
+		Hello, {{currentUser.name}}. Edit any information you would like to change below and hit submit.
 	</div>
 </div>
 
-{{/if}}
+<hr>
+
+<form id="userEditForm">
+	<div class="row">
+		<div class="large-12 columns">
+			<label>Name:
+				<input type="text" name="name" placeholder="{{currentUser.name}}">
+			</label>	
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-12 columns">
+			<label>Email:
+				<input type="text" name="email" placeholder="{{currentUser.email}}">
+			</label>
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-12 columns">
+			<label>Password:
+				<input type="password" name="password" placeholder="(unchanged)" value="{{password}}">
+			</label>
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-12 columns">
+			<label>Password (again): {{#if password != passwordConfirm}} <em>(password mismatch)</em> {{/if}}
+				<input type="password" name="passwordConfirm" placeholder="(unchanged)" value="{{passwordConfirm}}">
+			</label>
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-12 columns">
+			<input type="submit" class="button small expand{{#if editedUserSuccessfully}} success {{/if}}" value="{{editedUserSuccessfully ? 'Information updated' : 'Submit'}}">
+		</div>
+	</div>
+</form>
 
 {{/if}}
 
