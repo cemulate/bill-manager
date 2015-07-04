@@ -341,6 +341,8 @@ $.when(
 
 	// Mark a user paid/not paid on a bill
 	ractive.on("togglePaid", function(event) {
+		if (event.context.paid == "owner") return;
+		
 		var current = (event.context.paid == "true");
 		this.set(event.keypath + ".paid", (!current).toString());
 

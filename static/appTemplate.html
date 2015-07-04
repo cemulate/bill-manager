@@ -139,7 +139,7 @@
 					<div class="large-11 columns">
 						{{#if payers.length < 2}} 
 							{{#payers}}
-								<a {{#if paid == 'owner'}} disabled {{/if}} class="button expand{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
+								<a class="button expand{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
 									{{memberNameById(userId)}}
 									{{#if paid == 'true'}}
 										paid {{formatMoney(amount)}}
@@ -156,7 +156,7 @@
 						{{else}}
 							<ul class="button-group even-{{payers.length}}">
 								{{#payers}}
-									<li><a {{#if paid == 'owner'}} disabled {{/if}} class="button{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
+									<li><a class="button{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
 										{{memberNameById(userId)}}
 										{{#if paid == 'true'}}
 											paid {{formatMoney(amount/(payers.length))}}
