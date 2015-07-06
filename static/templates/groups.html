@@ -1,0 +1,30 @@
+{{#groups}}
+
+<div class="row panel">
+	<div class="large-8 columns">
+		<h4><a href="#/groups/{{_id}}">{{name}}</a></h4>
+	</div>
+	<div class="large-4 columns">
+		<a class="right" on-click="deleteGroup">Delete</a>
+	</div>
+</div>
+
+{{/}}
+
+<div class="row">
+	<div class="large-12 columns panel">
+		<form id="newGroupForm" class="form-elements-no-bottom">
+			<div class="row">
+
+				<div class="large-6 columns">
+					<input class="taller" type="text" name="name" placeholder="Name" maxlength="30">
+				</div>
+
+				<div class="large-6 columns">
+					<input type="submit" class="button small expand" value="New Group">
+				</div>
+			
+			</div>
+		</form>	
+	</div>
+</div>

@@ -1,0 +1,50 @@
+<div class="row">
+	<div class="large-12 columns panel">
+		<form id="loginForm" class="form-elements-no-bottom">
+			<div class="row">
+
+				<div class="large-4 columns">
+					<input class="taller" type="text" name="email" placeholder="Email" maxlength="50">
+				</div>
+
+				<div class="large-4 columns">
+					<input class="taller" type="password" name="password" placeholder="Password" value="{{password}}" maxlength="50">
+				</div>
+
+				<div class="large-4 columns">
+					<input type="submit" class="button small expand" value="Login">
+				</div>
+			
+			</div>
+		</form>	
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-12 columns">
+		<p>Or, provide a name and confirm your password to register: {{#if (passwordConfirm != "") && (password != passwordConfirm)}} <span><em>(password mismatch)</em></span> {{/if}}</p>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-12 columns panel">
+		<form id="registerForm" class="form-elements-no-bottom">
+			<div class="row">
+
+				<div class="large-4 columns">
+					<input class="taller" type="text" name="name" placeholder="Name" maxlength="50">
+				</div>
+
+				<div class="large-4 columns">
+					<input class="taller" type="password" name="passwordConfirm" placeholder="Password (again)" value="{{passwordConfirm}}" maxlength="50">
+				</div>
+
+				<div class="large-4 columns">
+					<input type="submit" {{#if registeredSuccessfully}} disabled {{/if}} 
+					class="button small expand{{#if registeredSuccessfully}} success {{/if}}" value="{{registeredSuccessfully ? 'Registered Successfully' : 'Register'}}">
+				</div>
+			
+			</div>
+		</form>	
+	</div>
+</div>

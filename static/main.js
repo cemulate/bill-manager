@@ -1,11 +1,32 @@
-var appTemplate = null;
+var templates = [];
 
 $.when(
 
 	// Grab the main Ractive template
 
-	$.get("/appTemplate.html", function(t) {
-		appTemplate = t;
+	$.get("/templates/app.html", function(t) {
+		templates.app = t;
+	}),
+	$.get("/templates/login.html", function(t) {
+		templates.login = t;
+	}),
+	$.get("/templates/userEdit.html", function(t) {
+		templates.userEdit = t;
+	}),
+	$.get("/templates/topBar.html", function(t) {
+		templates.topBar = t;
+	}),
+	$.get("/templates/groups.html", function(t) {
+		templates.groups = t;
+	}),
+	$.get("/templates/bills.html", function(t) {
+		templates.bills = t;
+	}),
+	$.get("/templates/addMemberModal.html", function(t) {
+		templates.addMemberModal = t;
+	}),
+	$.get("/templates/reconcileModal.html", function(t) {
+		templates.reconcileModal = t;
 	})
 
 ).then(function () {
@@ -15,28 +36,49 @@ $.when(
 	ractive = new Ractive({
 		magic: false,
 		el: 'appContainer',
-		template: appTemplate,
+		template: templates.app,
+		partials: {
+			login: templates.login, 
+			userEdit: templates.userEdit,
+			topBar: templates.topBar,
+			groups: templates.groups, 
+			bills: templates.bills, 
+			addMemberModal: templates.addMemberModal, 
+			reconcileModal: templates.reconcileModal
+		},
 		data: {
-			appState: "groups", // {groups, ...}
 
+			// Expose libraries to ractive templates
+			moment: moment,
+
+			// (Common to all partials)
 			currentUser: null,
-			currentGroup: null,
-			currentGroupMembers: null,
-			currentBills: [],
-			groups: [],
 
-			userSearchResults: [],
-
+			// Login partial
 			password: "",
 			passwordConfirm: "",
 			registeredSuccessfully: false,
+
+			// User Edit partial
 			editedUserSuccessfully: false,
 
-			reconcileData: null,
+			// App partial
+			appState: "groups", // {groups, ...}
 
+			// Groups partial
+			groups: [],
+			currentGroup: null,
+
+			// Bills partial
+			currentGroupMembers: null,
+			currentBills: [],
 			newBillFormError: false,
 
-			moment: moment // Give templates access to moment
+			// Add Member Modal partial
+			userSearchResults: [],
+
+			// Reconcile Modal partial
+			reconcileData: null,
 		}
 	});
 

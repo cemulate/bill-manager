@@ -1,0 +1,19 @@
+<div id="addMemberModal" class="reveal-modal tiny" data-reveal aria-labelledby="addMemberModal" aria-hidden="true" role="dialog">
+	<div class="row">
+		<div class="large-12 columns">
+			<label>Search by name:
+				<input id="addMemberModalInput" type="text" placeholder="Name" maxlength="50">
+			</label>
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-12 columns">
+			<ul>
+				{{#userSearchResults}}
+					<li><a on-click="addMemberToCurrentGroup">{{name}} ({{email}})</a></li>
+				{{/}}
+			</ul>
+		</div>
+	</div>
+	<a class="close-reveal-modal" aria-label="Close">&#215;</a>
+</div>

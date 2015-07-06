@@ -1,0 +1,20 @@
+<nav class="top-bar" data-topbar role="navigation">
+	<ul class="title-area">
+		<li class="name">
+			<h1><a href="/">Bill Manager</a></h1>
+		</li>
+		<li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+	</ul>
+
+	<section class="top-bar-section">
+		<ul class="right">
+			{{#if currentUser}}
+			
+			{{#if currentGroup}} <li><a on-click="clearReconcileData" data-reveal-id="reconcileModal"><strong>Reconcile ...</strong></a></li> {{/if}}
+			<li><a href="#/userPage">Logged in as {{currentUser.name}}</a></li>
+			<li><a href="/logout">Log out</a></li>
+
+			{{/if}}
+		</ul>
+	</section>
+</nav>

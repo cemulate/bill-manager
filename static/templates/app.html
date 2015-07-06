@@ -1,0 +1,37 @@
+{{>topBar}}
+
+<hr>
+
+<!-- Display login if no user -->
+
+{{#if !currentUser}} 
+	
+	{{>login}}
+
+{{else}}
+
+	{{#if appState == 'groups'}}
+
+		{{#if !currentGroup}}
+
+			{{>groups}}
+
+		{{else}}
+
+			{{>bills}}
+
+		{{/if}}
+
+	{{/if}}
+
+	{{#if appState == 'userPage'}}
+
+		{{>userEdit}}
+
+	{{/if}}
+
+{{/if}}
+
+{{>addMemberModal}}
+
+{{>reconcileModal}}
