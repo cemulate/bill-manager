@@ -48,10 +48,12 @@ passport.use(new LocalStrategy({
 	passwordField: 'password'
 }, function(email, password, done) {
 
-	usersdb.find({email: email}, function(err, docs) {
-		if (!docs[0]) done(null, false, {error: 'User does not exist'});
-		if (bcrypt.compareSync(password, docs[0].phash)) {
-			done(null, docs[0]);
+	usersdb.findOne({email: email}, function(err, user) {
+		if (!user) done(null, false, {error: 'User does not exist'});
+		// May have email in the system, but never registered for an account (no password):
+		if (!user.phash) done(null, false, {error: 'User does not exist'});
+		if (bcrypt.compareSync(password, user.phash)) {
+			done(null, user);
 		}
 		done(null, false, {error: 'Incorrect password'});
 	});
@@ -76,7 +78,6 @@ app.use(session({
 app.use(passport.initialize()); 
 app.use(passport.session());
 
-
 // Routing middleware
 
 // Log in to a user account
@@ -94,15 +95,32 @@ app.get('/logout', function(req, res, next) {
 // Register a new user by email
 // request parameters: {email, password, name}
 app.post('/register', function(req, res, next) {
-	usersdb.find({email: req.body.email}, function(err, docs) {
-		if (!docs[0]) {
+	usersdb.findOne({email: req.body.email}, function(err, user) {
+		if (!user) {
 			usersdb.insert({email: req.body.email, phash: bcrypt.hashSync(req.body.password), name: req.body.name});
 			res.send("OK");
+		} else if (!user.phash) {
+			// Email already in system, but never registered
+			usersdb.update({_id: user._id}, {email: req.body.email, phash: bcrypt.hashSync(req.body.password), name: req.body.name}, {}, function(err, ur) {
+				res.send("OK");
+			});
 		} else {
 			res.status(400).send("User already exists");
 		}
 	});
 });
+
+app.post('/registerTemp', function(req, res, next) {
+	usersdb.findOne({email: req.body.email}, function(err, user) {
+		if (!user) {
+			usersdb.insert({email: req.body.email, name: req.body.email}, function(err, newUser) {
+				res.send(newUser._id);
+			});
+		} else {
+			res.status(400).send("User already exists");
+		}
+	});
+})
 
 // Halts the request passing through with a 401 if there is no user logged in
 var auth = function(req, res, next) {

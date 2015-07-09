@@ -48,8 +48,9 @@ $.when(
 		},
 		data: {
 
-			// Expose libraries to ractive templates
+			// Expose libraries/things to ractive templates
 			moment: moment,
+			checkEmail: util.isEmail,
 
 			// (Common to all partials)
 			currentUser: null,
@@ -57,6 +58,7 @@ $.when(
 			// Login partial
 			password: "",
 			passwordConfirm: "",
+			emailInvalid: false,
 			registeredSuccessfully: false,
 
 			// User Edit partial
@@ -122,11 +124,20 @@ $.when(
 	// AJAX form submission
 
 	$(document).on("submit", "#loginForm", function(event) {
-		$.post('/login', $("#loginForm").serialize(), function(data) {
-			ractive.set("currentUser", data);
+		values = {};
+		$.each($('#loginForm').serializeArray(), function(i, field) {
+			values[field.name] = field.value;
 		});
-		ractive.set("password", "");
-		ractive.set("passwordConfirm", "");
+		if (util.isEmail(values.email)) {
+			$.post('/login', values, function(data) {
+				ractive.set("currentUser", data);
+			});
+			ractive.set("password", "");
+			ractive.set("passwordConfirm", "");
+			ractive.set("emailInvalid", false);
+		} else {
+			ractive.set("emailInvalid", true);
+		}
 		event.preventDefault();
 	});
 
@@ -138,14 +149,18 @@ $.when(
 		$.each($('#registerForm').serializeArray(), function(i, field) {
 			values[field.name] = field.value;
 		});
-		if (values.password == values.passwordConfirm) {
-			$.post('/register', {
-				name: values.name,
-				email: values.email,
-				password: values.password
-			}, function(data) {
-				ractive.set("registeredSuccessfully", true);
-			});
+		if (util.isEmail(values.email)) {
+			if (values.password == values.passwordConfirm) {
+				$.post('/register', {
+					name: values.name,
+					email: values.email,
+					password: values.password
+				}, function(data) {
+					ractive.set("registeredSuccessfully", true);
+				});
+			}
+		} else {
+			ractive.set("emailInvalid", true);
 		}
 		event.preventDefault();
 	});
@@ -378,6 +393,23 @@ $.when(
 				populateMembers();
 			});
 		}
+		$("#addMemberModal").foundation("reveal", "close");
+	});
+
+	ractive.on("addUnregisteredMemberToCurrentGroup", function(event) {
+		var email = $("#addUnregisteredMemberModalInput").val();
+		if (!util.isEmail(email)) {
+			ractive.set("emailInvalid", true);
+			return;
+		}
+		$.post('/registerTemp', {email: email}, function(newUserId) {
+			$.post('/users', {
+				groupId: ractive.get("currentGroup._id"),
+				userId: newUserId
+			}, function(data) {
+				populateMembers();
+			});
+		});
 		$("#addMemberModal").foundation("reveal", "close");
 	});
 

@@ -4,7 +4,7 @@
 			<div class="row">
 
 				<div class="large-4 columns">
-					<input class="taller" type="text" name="email" placeholder="Email" maxlength="50">
+					<input id="loginEmailInput" class="taller" type="text" name="email" placeholder="Email" maxlength="50">
 				</div>
 
 				<div class="large-4 columns">
@@ -45,6 +45,14 @@
 				</div>
 			
 			</div>
-		</form>	
+		</form>
 	</div>
 </div>
+
+{{#if emailInvalid}}
+	<div class="row">
+		<div class="large-12 columns">
+			<p><em>Enter a valid email address</em></p>
+		</div>
+	</div>
+{{/if}}
