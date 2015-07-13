@@ -19,33 +19,35 @@
 				{{#if payers.length < 2}} 
 					{{#payers}}
 						<a class="button expand{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
-							{{memberNameById(userId)}}
-							{{#if paid == 'true'}}
-								paid {{formatMoney(amount)}}
-							{{/if}}
-							{{#if paid == 'false'}}
-								owes {{formatMoney(amount)}}
-							{{/if}}
-							{{#if paid == 'owner'}}
-								<em>(paid bill)</em>
-							{{/if}}
-
-						</a>
-					{{/}}
-				{{else}}
-					<ul class="button-group even-{{payers.length}}">
-						{{#payers}}
-							<li><a class="button{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
-								{{memberNameById(userId)}}
+							<span class="fill-to-ellipsis"><strong>{{memberNameById(userId)}}</strong>
 								{{#if paid == 'true'}}
-									paid {{formatMoney(amount/(payers.length))}}
+									paid {{formatMoney(amount)}}
 								{{/if}}
 								{{#if paid == 'false'}}
-									owes {{formatMoney(amount/(payers.length))}}
+									owes {{formatMoney(amount)}}
 								{{/if}}
 								{{#if paid == 'owner'}}
 									<em>(paid bill)</em>
 								{{/if}}
+							</span>
+						</a>
+					{{/}}
+				{{else}}
+					<ul id="bill{{i}}-button-group" class="button-group even-{{payers.length}}">
+						{{#payers}}
+							<li><a class="button{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
+								<span class="fill-to-ellipsis">
+									<strong>{{memberNameById(userId)}}</strong>
+									{{#if paid == 'true'}}
+										paid {{formatMoney(amount/(payers.length))}}
+									{{/if}}
+									{{#if paid == 'false'}}
+										owes {{formatMoney(amount/(payers.length))}}
+									{{/if}}
+									{{#if paid == 'owner'}}
+										<em>(paid bill)</em>
+									{{/if}}
+								</span>
 							</a></li>
 						{{/}}
 					</ul>
@@ -82,15 +84,21 @@
 
 <div class="row">
 	<div class="large-12 columns panel">
-		<form id="newBillForm" class="form-elements-no-bottom">
+		<form id="newBillForm" class="form-elements-no-bottom" data-abide>
 			<div class="row">
 
 				<div class="large-4 columns">
-					<input class="taller" type="text" name="name" placeholder="Name" maxlength="30">
+					<div class="name-field">
+						<input class="taller" type="text" name="name" placeholder="Name" required maxlength="30">
+						<small class="error">Name is required</small>
+					</div>
 				</div>
 
 				<div class="large-4 columns">
-					<input class="taller numbersOnly" type="text" name="amount" placeholder="Amount" maxlength="10">
+					<div class="number-field">
+						<input class="taller" type="text" name="amount" placeholder="Amount" pattern="number" required maxlength="10">
+						<small class="error">Enter a valid number</small>
+					</div>
 				</div>
 
 				<div class="large-4 columns">
@@ -101,13 +109,3 @@
 		</form>	
 	</div>
 </div>
-
-{{#if newBillFormError}}
-
-<div class="row">
-	<div class="large-12 columns">
-		<p><em>Enter a numeric value for bill amount</em></p>
-	</div>
-</div>
-
-{{/if}}

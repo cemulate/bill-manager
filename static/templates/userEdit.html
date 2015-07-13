@@ -6,33 +6,42 @@
 
 <hr>
 
-<form id="userEditForm">
+<form id="userEditForm" data-abide>
 	<div class="row">
 		<div class="large-12 columns">
-			<label>Name:
-				<input type="text" name="name" placeholder="{{currentUser.name}}" maxlength="50">
-			</label>	
+			<div class="name-field">
+				<label>Name:
+					<input type="text" name="name" placeholder="{{currentUser.name}}" maxlength="50">
+				</label>
+			</div>	
 		</div>
 	</div>
 	<div class="row">
 		<div class="large-12 columns">
-			<label>Email:
-				<input type="text" name="email" placeholder="{{currentUser.email}}" maxlength="50">
-			</label>
+			<div class="email-field">
+				<label>Email:
+					<input type="text" name="email" placeholder="{{currentUser.email}}" maxlength="50">
+				</label>
+			</div>
 		</div>
 	</div>
 	<div class="row">
 		<div class="large-12 columns">
-			<label>Password:
-				<input type="password" name="password" placeholder="(unchanged)" value="{{password}}" maxlength="50">
-			</label>
+			<div class="password-field">
+				<label>Password:
+					<input id="password" type="password" name="password" placeholder="(unchanged)" maxlength="50">
+				</label>
+			</div>
 		</div>
 	</div>
 	<div class="row">
 		<div class="large-12 columns">
-			<label>Password (again): {{#if password != passwordConfirm}} <em>(password mismatch)</em> {{/if}}
-				<input type="password" name="passwordConfirm" placeholder="(unchanged)" value="{{passwordConfirm}}" maxlength="50">
-			</label>
+			<div class="password-confirmation-field">
+				<label>Password (again):
+					<input type="password" name="passwordConfirm" placeholder="(unchanged)" data-equalto="password" maxlength="50">
+					<small class="error">Passwords don't match</small>
+				</label>
+			</div>
 		</div>
 	</div>
 	<div class="row">

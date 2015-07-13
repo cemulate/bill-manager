@@ -1,5 +1,14 @@
 var templates = [];
 
+$.fn.textWidth = function() {
+	var html_org = $(this).html();
+	var html_calc = '<span>' + html_org + '</span>';
+	$(this).html(html_calc);
+	var width = $(this).find('span:first').width();
+	$(this).html(html_org);
+	return width;
+};
+
 $.when(
 
 	// Grab the main Ractive template
@@ -9,6 +18,9 @@ $.when(
 	}),
 	$.get("/templates/login.html", function(t) {
 		templates.login = t;
+	}),
+	$.get("/templates/register.html", function(t) {
+		templates.register = t;
 	}),
 	$.get("/templates/userEdit.html", function(t) {
 		templates.userEdit = t;
@@ -39,6 +51,7 @@ $.when(
 		template: templates.app,
 		partials: {
 			login: templates.login, 
+			register: templates.register,
 			userEdit: templates.userEdit,
 			topBar: templates.topBar,
 			groups: templates.groups, 
@@ -50,22 +63,18 @@ $.when(
 
 			// Expose libraries/things to ractive templates
 			moment: moment,
-			checkEmail: util.isEmail,
 
 			// (Common to all partials)
 			currentUser: null,
 
-			// Login partial
-			password: "",
-			passwordConfirm: "",
-			emailInvalid: false,
+			// Register partial
 			registeredSuccessfully: false,
 
 			// User Edit partial
 			editedUserSuccessfully: false,
 
 			// App partial
-			appState: "groups", // {groups, ...}
+			appState: "groups", // {groups, userPage, register, ...}
 
 			// Groups partial
 			groups: [],
@@ -74,7 +83,6 @@ $.when(
 			// Bills partial
 			currentGroupMembers: null,
 			currentBills: [],
-			newBillFormError: false,
 
 			// Add Member Modal partial
 			userSearchResults: [],
@@ -119,7 +127,7 @@ $.when(
 
 	ractive.set("formatMoney", function(amountOrString) {
 		return "$" + parseFloat(amountOrString).toFixed(2);
-	})
+	});
 
 	// AJAX form submission
 
@@ -132,20 +140,12 @@ $.when(
 			$.post('/login', values, function(data) {
 				ractive.set("currentUser", data);
 			});
-			ractive.set("password", "");
-			ractive.set("passwordConfirm", "");
-			ractive.set("emailInvalid", false);
-		} else {
-			ractive.set("emailInvalid", true);
 		}
 		event.preventDefault();
 	});
 
 	$(document).on("submit", "#registerForm", function(event) {
 		values = {}
-		$.each($('#loginForm').serializeArray(), function(i, field) {
-			values[field.name] = field.value;
-		});
 		$.each($('#registerForm').serializeArray(), function(i, field) {
 			values[field.name] = field.value;
 		});
@@ -159,8 +159,6 @@ $.when(
 					ractive.set("registeredSuccessfully", true);
 				});
 			}
-		} else {
-			ractive.set("emailInvalid", true);
 		}
 		event.preventDefault();
 	});
@@ -180,9 +178,6 @@ $.when(
 			$.post('/bills', values, function(data) {
 				refreshBills();
 			});
-			ractive.set("newBillFormError", false);
-		} else {
-			ractive.set("newBillFormError", true);
 		}
 		event.preventDefault();
 	});
@@ -506,9 +501,6 @@ $.when(
 	var router = Router({
 		
 		'/': function() {
-			ractive.set("password", "");
-			ractive.set("passwordConfirm", "");
-
 			ractive.set("appState", "groups");
 			ractive.set("currentGroup", null);
 			refreshGroups();
@@ -523,10 +515,13 @@ $.when(
 		},
 
 		'/userPage': function() {
-			ractive.set("password", "");
-			ractive.set("passwordConfirm", "");
-
 			ractive.set("appState", "userPage");
+			window.setTimeout(function() { $(document).foundation(); }, 100);
+		},
+
+		'/register': function() {
+			ractive.set("appState", "register");
+			window.setTimeout(function() { $(document).foundation(); }, 100);
 		}
 
 	});

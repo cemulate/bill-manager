@@ -4,9 +4,17 @@
 
 <!-- Display login if no user -->
 
-{{#if !currentUser}} 
+{{#if !currentUser}}
 	
-	{{>login}}
+	{{#if appState == 'register'}}
+
+		{{>register}}
+	
+	{{else}}
+
+		{{>login}}
+
+	{{/if}}
 
 {{else}}
 
