@@ -1,3 +1,19 @@
+{{#if loadingGroups}}
+	<div class="row">
+		<div class="large-12 columns">
+			<img class="ajax-loader" src="/images/ajax-loader.gif">
+		</div>
+	</div>
+{{/if}}
+
+{{#if !loadingGroups && groups.length == 0}}
+	<div class="row panel faint">
+		<div class="large-12 columns">
+			<h4>No Groups</h4>
+		</div>
+	</div>
+{{/if}}
+
 {{#groups}}
 
 <div class="row panel">

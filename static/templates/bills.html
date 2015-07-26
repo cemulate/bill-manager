@@ -1,3 +1,19 @@
+{{#if loadingBills}}
+	<div class="row">
+		<div class="large-12 columns">
+			<img class="ajax-loader" src="/images/ajax-loader.gif">
+		</div>
+	</div>
+{{/if}}
+
+{{#if !loadingBills && currentBills.length == 0}}
+	<div class="row panel faint">
+		<div class="large-12 columns">
+			<h4>No Bills</h4>
+		</div>
+	</div>
+{{/if}}
+
 {{#currentBills:i}}
 
 <div class="row">

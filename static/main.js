@@ -69,11 +69,13 @@ $.when(
 
 			// Groups partial
 			groups: [],
-			currentGroup: null,
+			loadingGroups: false,
 
 			// Bills partial
+			currentGroup: null,
 			currentGroupMembers: null,
 			currentBills: [],
+			loadingBills: false,
 
 			// Add Member Modal partial
 			userSearchResults: [],
@@ -245,8 +247,10 @@ $.when(
 
 	// Fetch the groups for the logged in user
 	var refreshGroups = function() {
+		ractive.set("loadingGroups", true);
 		$.get('/groups', function(data) {
 			ractive.set("groups", data);
+			ractive.set("loadingGroups", false);
 		});
 	};
 
@@ -257,6 +261,7 @@ $.when(
 				ractive.set("currentBills", data);
 				// Re-foundation the document so newly rendered JS dropdowns will work ~10ms later (this is dirty af help pls)
 				_.debounce(function() { $(document).foundation(); }, 100)();
+				ractive.set("loadingBills", false);
 			});
 		} else {
 			ractive.set("currentBills", []);
@@ -494,7 +499,6 @@ $.when(
 		'/': function() {
 			ractive.set("appState", "groups");
 			ractive.set("currentGroup", null);
-			refreshGroups();
 		},
 
 		'/groups/:groupId': function(groupId) {
@@ -502,6 +506,8 @@ $.when(
 			ractive.set("appState", "groups");
 			ractive.set("currentGroup", g);
 			populateMembers();
+			ractive.set("currentBills", []);
+			ractive.set("loadingBills", true);
 			refreshBills();
 		},
 
@@ -520,5 +526,7 @@ $.when(
 	router.init();
 
 	router.setRoute("");
+
+	refreshGroups();
 
 });
