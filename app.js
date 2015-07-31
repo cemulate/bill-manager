@@ -249,7 +249,10 @@ app.get('/payers/:billId', auth, function(req, res, next) {
 // Get the members of the group with id 'groupId'
 app.get('/members/:groupId', auth, function(req, res, next) {
 	groupsdb.find({_id: req.params.groupId}, function(err, groups) {
-		if (!groups[0]) res.status(500).send("Error retrieving group members"); return;
+		if (!groups[0]) {
+			res.status(500).send("Error retrieving group members");
+			return;
+		}
 		usersdb.find({_id: {$in: groups[0].members}}, function(err, users) {
 			res.send(users);
 		});
