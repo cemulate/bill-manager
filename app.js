@@ -15,6 +15,96 @@ var _ = require('underscore');
 
 var path = require('path');
 
+// nodemailer addition
+var nodemailer = requre('nodemailer');
+var messageType = "";
+// creating SMTP transporter (i.e. login to external smtp server)
+var transporter = nodemailer.createTransport({
+	service: 'Gmail',
+	auth:
+	{
+		user: 'cmbillmanager@gmail.com',
+		pass: 'A11en411'
+	}
+});
+
+//mail handling and options
+
+//function parameters: (email,messageType,details) NOTE: "details" are things like the name of the bill, email is outbound email addr
+var mailHandler = function(email,messageType,details) {
+	if(messageType === "newUser") { //user welcome message
+		var mailOptions = {
+			from: 'cmbillmanager@gmail.com', //sender addr
+			to: email, //receiver
+			subject: 'Welcome to bill-manager ' + details + '!'
+			text: 'Thank you for signing up for a bill-manager account!\n We are pleased to have you use our free bill splitting and managing app.\n\n if you have any questions or comments please reply to this email.\n\nbill-manager team :)'
+			html: ''
+		};
+		transporter.sendMail(mailOptions, function(error,info) {
+			if(error) {
+				console.log(error);
+			}
+			else{
+				console.log('Message sent: ' + info.response);
+			}
+		});
+	}
+	else if(messageType === "newBill") { //user added a new bill
+		var mailOptions = {
+			from: 'cmbillmanager@gmail.com', //sender addr
+			to: email, //receiver
+			subject: 'You have added a new bill for ' + details
+			text: 'This is an automated message confirming that you have added a bill for ' + details + '.\nThank you,\n\nbill-manager team'
+			html: ''
+		};
+		transporter.sendMail(mailOptions, function(error,info) {
+			if(error) {
+				console.log(error);
+			}
+			else{
+				console.log('Message sent: ' + info.response);
+			}
+		});
+	}
+	else if(messageType === "addedToBill") { //user got added to bill
+		var mailOptions = {
+			from: 'cmbillmanager@gmail.com', //sender addr
+			to: email, //receiver
+			subject: 'You have been added to a new bill for ' + details
+			text: 'This is an automated message letting you know that you have been added to a bill for ' + details + '.\nThank you,\n\nbill-manager team'
+			html: ''
+		};
+		transporter.sendMail(mailOptions, function(error,info) {
+			if(error) {
+				console.log(error);
+			}
+			else{
+				console.log('Message sent: ' + info.response);
+			}
+		});
+	}
+	else { //this is an unknown state
+		console.log('Error, unknown messageType: ' + messageType);
+	}
+	//debug send an email to me
+	var mailOptions = {
+		from: 'cmbillmanager@gmail.com', //sender addr
+		to: 'jacob.dixon@okstate.edu', //receiver
+		subject: 'Sent an email to ' + email
+		text: 'bill-manager sent an email to ' + email + ' for message type ' + messageType
+		html: ''
+	};
+	transporter.sendMail(mailOptions, function(error,info) {
+		if(error) {
+			console.log(error);
+		}
+		else{
+			console.log('Message sent: ' + info.response);
+		}
+	});
+}
+		
+
 app = express();
 
 // Connect to databases
@@ -99,11 +189,13 @@ app.post('/register', function(req, res, next) {
 		if (!user) {
 			usersdb.insert({email: req.body.email, phash: bcrypt.hashSync(req.body.password), name: req.body.name});
 			res.send("OK");
+			mailHandler(email,'newUser',name); //send welcome e-mail
 		} else if (!user.phash) {
 			// Email already in system, but never registered
 			usersdb.update({_id: user._id}, {email: req.body.email, phash: bcrypt.hashSync(req.body.password), name: req.body.name}, {}, function(err, ur) {
-				res.send("OK");
-			});
+			res.send("OK");
+			mailHandler(email,'newUser',name); //send welcome e-mail
+		});
 		} else {
 			res.status(400).send("User already exists");
 		}
@@ -116,6 +208,7 @@ app.post('/registerTemp', function(req, res, next) {
 			usersdb.insert({email: req.body.email, name: req.body.email}, function(err, newUser) {
 				res.send(newUser._id);
 			});
+			mailHandler(email,'newUser',name); //send welcome e-mail
 		} else {
 			res.status(400).send("User already exists");
 		}
@@ -184,6 +277,7 @@ app.post('/groups', auth, function(req, res, next) {
 	groupsdb.insert(req.body, function(err, nr) {
 		if (err) return res.status(500).send("Error adding group");
 		res.send("OK");
+		mailHandler(req.user.email,'newGroup',req.body); //send email for creating a new group
 	});
 });
 
@@ -216,7 +310,9 @@ app.get('/bills/:groupId', auth, function(req, res, next) {
 // request parameters: {<bill parameters>}
 app.post('/bills', auth, function(req, res, next) {
 	billsdb.insert(req.body);
+	if (err) return res.status(500).send("Error creating new bill");
 	res.send("OK");
+	mailHandler(req.user.email,'newBill',req.body); //send email new bill created
 });
 
 // Update a bill
