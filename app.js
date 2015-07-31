@@ -16,7 +16,7 @@ var _ = require('underscore');
 var path = require('path');
 
 // nodemailer addition
-var nodemailer = requre('nodemailer');
+var nodemailer = require('nodemailer');
 var messageType = "";
 // creating SMTP transporter (i.e. login to external smtp server)
 var transporter = nodemailer.createTransport({
@@ -36,9 +36,9 @@ var mailHandler = function(email,messageType,details) {
 		var mailOptions = {
 			from: 'cmbillmanager@gmail.com', //sender addr
 			to: email, //receiver
-			subject: 'Welcome to bill-manager ' + details + '!'
+			subject: 'Welcome to bill-manager ' + details + '!',
 			text: 'Thank you for signing up for a bill-manager account!\n We are pleased to have you use our free bill splitting and managing app.\n\n if you have any questions or comments please reply to this email.\n\nbill-manager team :)'
-			html: ''
+			//html: ''
 		};
 		transporter.sendMail(mailOptions, function(error,info) {
 			if(error) {
@@ -53,9 +53,9 @@ var mailHandler = function(email,messageType,details) {
 		var mailOptions = {
 			from: 'cmbillmanager@gmail.com', //sender addr
 			to: email, //receiver
-			subject: 'You have added a new bill for ' + details
+			subject: 'You have added a new bill for ' + details,
 			text: 'This is an automated message confirming that you have added a bill for ' + details + '.\nThank you,\n\nbill-manager team'
-			html: ''
+			//html: ''
 		};
 		transporter.sendMail(mailOptions, function(error,info) {
 			if(error) {
@@ -70,9 +70,9 @@ var mailHandler = function(email,messageType,details) {
 		var mailOptions = {
 			from: 'cmbillmanager@gmail.com', //sender addr
 			to: email, //receiver
-			subject: 'You have been added to a new bill for ' + details
+			subject: 'You have been added to a new bill for ' + details,
 			text: 'This is an automated message letting you know that you have been added to a bill for ' + details + '.\nThank you,\n\nbill-manager team'
-			html: ''
+			//html: ''
 		};
 		transporter.sendMail(mailOptions, function(error,info) {
 			if(error) {
@@ -90,9 +90,9 @@ var mailHandler = function(email,messageType,details) {
 	var mailOptions = {
 		from: 'cmbillmanager@gmail.com', //sender addr
 		to: 'jacob.dixon@okstate.edu', //receiver
-		subject: 'Sent an email to ' + email
+		subject: 'Sent an email to ' + email,
 		text: 'bill-manager sent an email to ' + email + ' for message type ' + messageType
-		html: ''
+		//html: ''
 	};
 	transporter.sendMail(mailOptions, function(error,info) {
 		if(error) {
@@ -189,12 +189,12 @@ app.post('/register', function(req, res, next) {
 		if (!user) {
 			usersdb.insert({email: req.body.email, phash: bcrypt.hashSync(req.body.password), name: req.body.name});
 			res.send("OK");
-			mailHandler(email,'newUser',name); //send welcome e-mail
+			mailHandler(req.body.email,'newUser',req.body.name); //send welcome e-mail
 		} else if (!user.phash) {
 			// Email already in system, but never registered
 			usersdb.update({_id: user._id}, {email: req.body.email, phash: bcrypt.hashSync(req.body.password), name: req.body.name}, {}, function(err, ur) {
 			res.send("OK");
-			mailHandler(email,'newUser',name); //send welcome e-mail
+			mailHandler(req.body.email,'newUser',req.body.name); //send welcome e-mail
 		});
 		} else {
 			res.status(400).send("User already exists");
