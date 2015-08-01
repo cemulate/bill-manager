@@ -18,6 +18,7 @@ var path = require('path');
 // nodemailer addition
 var nodemailer = require('nodemailer');
 var messageType = "";
+var userGlobal = "";
 // creating SMTP transporter (i.e. login to external smtp server)
 var transporter = nodemailer.createTransport({
 	service: 'Gmail',
@@ -40,14 +41,6 @@ var mailHandler = function(email,messageType,details) {
 			text: 'Thank you for signing up for a bill-manager account!\n We are pleased to have you use our free bill splitting and managing app.\n\n if you have any questions or comments please reply to this email.\n\nbill-manager team :)'
 			//html: ''
 		};
-		transporter.sendMail(mailOptions, function(error,info) {
-			if(error) {
-				console.log(error);
-			}
-			else{
-				console.log('Message sent: ' + info.response);
-			}
-		});
 	}
 	else if(messageType === "newBill") { //user added a new bill
 		var mailOptions = {
@@ -57,14 +50,6 @@ var mailHandler = function(email,messageType,details) {
 			text: 'This is an automated message confirming that you have added a bill for ' + details + '.\nThank you,\n\nbill-manager team'
 			//html: ''
 		};
-		transporter.sendMail(mailOptions, function(error,info) {
-			if(error) {
-				console.log(error);
-			}
-			else{
-				console.log('Message sent: ' + info.response);
-			}
-		});
 	}
 	else if(messageType === "addedToBill") { //user got added to bill
 		var mailOptions = {
@@ -74,19 +59,38 @@ var mailHandler = function(email,messageType,details) {
 			text: 'This is an automated message letting you know that you have been added to a bill for ' + details + '.\nThank you,\n\nbill-manager team'
 			//html: ''
 		};
-		transporter.sendMail(mailOptions, function(error,info) {
-			if(error) {
-				console.log(error);
-			}
-			else{
-				console.log('Message sent: ' + info.response);
-			}
-		});
+	}
+	else if(messageType === "billChanged") { //bill user had was changed
+		var mailOptions = {
+			from: 'cmbillmanager@gmail.com', //sender addr
+			to: email, //receiver
+			subject: 'Bill' + details + ' was changed',
+			text: 'This is an automated message letting you know that the ' + details + ' bill was modified.\nThank you,\n\nbill-manager team'
+			//html: ''
+		};
+	}
+	else if(messageType === "billDeleted") { //bill user was on got deleted
+		var mailOptions = {
+			from: 'cmbillmanager@gmail.com', //sender addr
+			to: email, //receiver
+			subject: 'Bill ' + details + ' was deleted',
+			text: 'This is an automated message letting you know that the ' + details + ' bill was deleted.\nThank you,\n\nbill-manager team'
+			//html: ''
+		};
 	}
 	else { //this is an unknown state
 		console.log('Error, unknown messageType: ' + messageType);
 	}
-	//debug send an email to me
+	
+	transporter.sendMail(mailOptions, function(error,info) { //send mail
+		if(error) {
+			console.log(error);
+		}
+		else{
+			console.log('Message sent: ' + info.response);
+		}
+	});
+	//debug send an email to me -- delete this at some point
 	var mailOptions = {
 		from: 'cmbillmanager@gmail.com', //sender addr
 		to: 'jacob.dixon@okstate.edu', //receiver
@@ -146,6 +150,7 @@ passport.use(new LocalStrategy({
 			done(null, user);
 		}
 		done(null, false, {error: 'Incorrect password'});
+		userGlobal = email;
 	});
 
 }));
@@ -189,12 +194,14 @@ app.post('/register', function(req, res, next) {
 		if (!user) {
 			usersdb.insert({email: req.body.email, phash: bcrypt.hashSync(req.body.password), name: req.body.name});
 			res.send("OK");
-			mailHandler(req.body.email,'newUser',req.body.name); //send welcome e-mail
+			userGlobal = req.body.email;
+			mailHandler(userGlobal,'newUser',req.body.name); //send welcome e-mail
 		} else if (!user.phash) {
 			// Email already in system, but never registered
 			usersdb.update({_id: user._id}, {email: req.body.email, phash: bcrypt.hashSync(req.body.password), name: req.body.name}, {}, function(err, ur) {
 			res.send("OK");
-			mailHandler(req.body.email,'newUser',req.body.name); //send welcome e-mail
+			userGlobal = req.body.email;
+			mailHandler(userGlobal,'newUser',req.body.name); //send welcome e-mail
 		});
 		} else {
 			res.status(400).send("User already exists");
@@ -208,7 +215,8 @@ app.post('/registerTemp', function(req, res, next) {
 			usersdb.insert({email: req.body.email, name: req.body.email}, function(err, newUser) {
 				res.send(newUser._id);
 			});
-			mailHandler(email,'newUser',name); //send welcome e-mail
+			userGlobal = req.body.email;
+			mailHandler(userGlobal,'newUser',req.body.name); //send welcome e-mail
 		} else {
 			res.status(400).send("User already exists");
 		}
@@ -277,7 +285,7 @@ app.post('/groups', auth, function(req, res, next) {
 	groupsdb.insert(req.body, function(err, nr) {
 		if (err) return res.status(500).send("Error adding group");
 		res.send("OK");
-		mailHandler(req.user.email,'newGroup',req.body); //send email for creating a new group
+		mailHandler(userGlobal,'newGroup',req.body); //send email for creating a new group
 	});
 });
 
@@ -310,9 +318,9 @@ app.get('/bills/:groupId', auth, function(req, res, next) {
 // request parameters: {<bill parameters>}
 app.post('/bills', auth, function(req, res, next) {
 	billsdb.insert(req.body);
-	if (err) return res.status(500).send("Error creating new bill");
+	//if (err) return res.status(500).send("Error creating new bill");
 	res.send("OK");
-	mailHandler(req.user.email,'newBill',req.body); //send email new bill created
+	mailHandler(userGlobal,'newBill',req.body); //send email new bill created
 });
 
 // Update a bill
@@ -321,6 +329,7 @@ app.put('/bills', auth, function(req, res, next) {
 	billsdb.update({_id: req.body.id}, req.body.replacement, {}, function(err, ur) {
 		if (err) return res.status(500).send("Error updating bill");
 		res.send("OK");
+		mailHandler(userGlobal,'billChanged',req.body); //send email when bill is changed
 	});
 })
 
@@ -330,6 +339,7 @@ app.delete('/bills', auth, function(req, res, next) {
 	billsdb.remove({_id: req.body.id}, {}, function(err, nr) {
 		if (err) return res.status(500).send("Error deleting bill");
 		res.send("OK");
+		mailHandler(userGlobal,'billDeleted',req.body); //send email when bill is deleted
 	});
 });
 
