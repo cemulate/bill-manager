@@ -142,6 +142,7 @@ $.when(
 		$.each($('#registerForm').serializeArray(), function(i, field) {
 			values[field.name] = field.value;
 		});
+		values.email = value.email.toLowerCase();
 		if (util.isEmail(values.email)) {
 			if (values.password == values.passwordConfirm) {
 				$.post('/register', {
@@ -448,13 +449,13 @@ $.when(
 				if (b.payers[j].userId == other._id) otherIndex = j;
 			}
 
-			if (otherIndex == -1) return;
+			if (otherIndex == -1) continue;
 
 			var otherPaid = b.payers[otherIndex].paid;
 			var mePaid = b.payers[meIndex].paid;
 			
 			// If the other user isn't on this bill, nothing to do
-			if (!otherPaid) return;
+			if (!otherPaid) continue;
 
 			if (mePaid == "owner") {
 				// I'm responsible for this bill
