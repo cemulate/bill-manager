@@ -129,6 +129,7 @@ $.when(
 		$.each($('#loginForm').serializeArray(), function(i, field) {
 			values[field.name] = field.value;
 		});
+		values.email = values.email.toLowerCase();
 		if (util.isEmail(values.email)) {
 			$.post('/login', values, function(data) {
 				ractive.set("currentUser", data);
