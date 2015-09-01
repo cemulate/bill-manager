@@ -449,7 +449,7 @@ $.when(
 				if (b.payers[j].userId == other._id) otherIndex = j;
 			}
 
-			if (otherIndex == -1) continue;
+			if (otherIndex == -1 || meIndex == -1) continue;
 
 			var otherPaid = b.payers[otherIndex].paid;
 			var mePaid = b.payers[meIndex].paid;
