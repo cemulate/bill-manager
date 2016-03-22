@@ -1,3 +1,1 @@
-Bill Manager
-================
-
+# Minimal Web App Stack

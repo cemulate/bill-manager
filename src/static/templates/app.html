@@ -1,15 +1,11 @@
-{{>topBar}}
-
-<hr>
-
 <!-- Display login if no user -->
 
 {{#if !currentUser}}
-	
+
 	{{#if appState == 'register'}}
 
 		{{>register}}
-	
+
 	{{else}}
 
 		{{>login}}

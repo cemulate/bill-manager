@@ -1,4 +1,4 @@
-var express = require('express')
+var express = require('express');
 
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
@@ -75,7 +75,7 @@ app.use(session({
 }));
 
 // Install the passport middleware
-app.use(passport.initialize()); 
+app.use(passport.initialize());
 app.use(passport.session());
 
 // Routing middleware
