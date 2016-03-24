@@ -25,57 +25,42 @@ $.when.apply(null, reqs).then(function () {
 		template: appTemplate,
 		partials: templates,
 		data: {
+			moment: moment,					// Expose moment to ractive
+			currentUser: null,				// Global user context
 
-			// Expose libraries/things to ractive templates
-			moment: moment,
+			registeredSuccessfully: false,	// Register partial
 
-			// (Common to all partials)
-			currentUser: null,
+			editedUserSuccessfully: false,	// User Edit partial
 
-			// Register partial
-			registeredSuccessfully: false,
+			appState: "groups", 			// App partial {groups, userPage, register, ...}
 
-			// User Edit partial
-			editedUserSuccessfully: false,
-
-			// App partial
-			appState: "groups", // {groups, userPage, register, ...}
-
-			// Groups partial
-			groups: [],
+			groups: [],						// Groups partial
 			loadingGroups: false,
 
-			// Bills partial
-			currentGroup: null,
+			currentGroup: null,				// Bills partial
 			currentGroupMembers: null,
 			currentBills: [],
 			loadingBills: false,
 
-			// Add Member Modal partial
-			userSearchResults: [],
+			userSearchResults: [],			// Add Member Modal partial
 
-			// Reconcile Modal partial
-			reconcileData: null,
+			reconcileData: null,			// Reconcile Modal partial
 		}
 	});
 
 	// Ractive helper functions
 
 	// Grab the user name from a user id
-	ractive.set("memberNameById", function(id) {
+	ractive.set("memberNameById", id => {
 		var members = ractive.get("currentGroupMembers");
 		if (members) {
 			var user = members.find(member => (member._id == id));
-			if (user) {
-				return user.name;
-			} else {
-				return "";
-			}
+			return user ? user.name : "";
 		}
 	});
 
 	// An awful hack because Ractive doesn't allow access to the parent scope inside a section (#)
-	ractive.set("dropdownDataForBill", function(billId) {
+	ractive.set("dropdownDataForBill", billId => {
 		if (!billId) return {};
 		var bill = ractive.get("currentBills").find(x => (x._id == billId));
 		var currentGroupMembers = ractive.get("currentGroupMembers");
@@ -104,7 +89,6 @@ $.when.apply(null, reqs).then(function () {
 			values[field.name] = field.value;
 		}
 		values.email = values.email.toLowerCase();
-		console.log(values);
 		if (isEmail(values.email)) {
 			$.post('/login', values, data => {
 				ractive.set("currentUser", data);
@@ -121,11 +105,7 @@ $.when.apply(null, reqs).then(function () {
 		values.email = value.email.toLowerCase();
 		if (isEmail(values.email)) {
 			if (values.password == values.passwordConfirm) {
-				$.post('/register', {
-					name: values.name,
-					email: values.email,
-					password: values.password
-				}, data => {
+				$.post('/register', values, data => {
 					ractive.set("registeredSuccessfully", true);
 				});
 			}
@@ -264,9 +244,7 @@ $.when.apply(null, reqs).then(function () {
 
 	// When the user logs in with a valid user, refresh the group list
 	ractive.observe("currentUser", (newVal, oldVal, keypath) => {
-		if (ractive.get("currentUser")) {
-			refreshGroups();
-		}
+		if (ractive.get("currentUser")) refreshGroups();
 	});
 
 	// Delete a group
@@ -276,9 +254,7 @@ $.when.apply(null, reqs).then(function () {
 			data: {
 				id: event.context._id
 			},
-			success: data => {
-				refreshGroups();
-			}
+			success: refreshGroups
 		});
 	});
 
@@ -289,9 +265,7 @@ $.when.apply(null, reqs).then(function () {
 			data: {
 				id: event.context._id
 			},
-			success: data => {
-				refreshBills();
-			}
+			success: refreshBills
 		});
 	});
 
@@ -341,9 +315,7 @@ $.when.apply(null, reqs).then(function () {
 				id: bill._id,
 				replacement: bill
 			},
-			success: data => {
-				refreshBills();
-			}
+			success: refreshBills
 		});
 	});
 
@@ -354,9 +326,7 @@ $.when.apply(null, reqs).then(function () {
 			$.post('/users', {
 				groupId: ractive.get("currentGroup._id"),
 				userId: event.context._id
-			}, data => {
-				populateMembers();
-			});
+			}, refreshBills);
 		}
 		$("#addMemberModal").foundation("reveal", "close");
 	});
@@ -371,9 +341,7 @@ $.when.apply(null, reqs).then(function () {
 			$.post('/users', {
 				groupId: ractive.get("currentGroup._id"),
 				userId: newUserId
-			}, data => {
-				populateMembers();
-			});
+			}, populateMembers);
 		});
 		$("#addMemberModal").foundation("reveal", "close");
 	});
@@ -476,7 +444,7 @@ $.when.apply(null, reqs).then(function () {
 		},
 
 		'/groups/:groupId': groupId => {
-			var g = ractive.get("groups").find(x => {return x._id == groupId});
+			var g = ractive.get("groups").find(x => (x._id == groupId));
 			ractive.set("appState", "groups");
 			ractive.set("currentGroup", g);
 			populateMembers();
@@ -495,7 +463,6 @@ $.when.apply(null, reqs).then(function () {
 	});
 
 	router.init();
-
 	router.setRoute("");
 
 	refreshGroups();
