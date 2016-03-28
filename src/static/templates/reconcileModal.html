@@ -1,4 +1,4 @@
-<div id="reconcileModal" class="reveal-modal tiny" data-reveal aria-labelledby="reconcileModal" aria-hidden="true" role="dialog">
+<div id="reconcileModal" class="reveal" data-reveal>
 	<div class="row">
 		<div class="large-12 columns">
 			<p>Choose user to reconcile with:</p>
@@ -34,5 +34,7 @@
 			</div>
 		</div>
 	{{/if}}
-	<a class="close-reveal-modal" aria-label="Close">&#215;</a>
+	<button class="close-button" data-close aria-label="Close modal" type="button">
+    	<span aria-hidden="true">&times;</span>
+  	</button>
 </div>

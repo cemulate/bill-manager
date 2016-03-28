@@ -2,7 +2,7 @@ var isEmail = function(x) {
 	return (/^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*\.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,5})?$/i.test(x));
 }
 
-var partials = ["login", "register", "userEdit", "groups", "bills", "addMemberModal", "reconcileModal"];
+var partials = ["login", "register", "userEdit", "groups", "bills", "addMemberModal", "reconcileModal", "topBar"];
 var templates = {};
 var appTemplate = null;
 
@@ -15,7 +15,12 @@ reqs.push($.get("/templates/app.html", r => {
 	appTemplate = r;
 }));
 
-$.when.apply(null, reqs).then(function () {
+$(document).data("document-ready-deffered", $.Deferred()).ready(() => {
+    $(document).data("document-ready-deffered").resolve();
+});
+reqs.push($(document).data("document-ready-deffered"));
+
+$.when.apply(null, reqs).then(() => {
 
 	// Setup Ractive
 
@@ -77,8 +82,13 @@ $.when.apply(null, reqs).then(function () {
 		return data;
 	});
 
-	ractive.set("formatMoney", function(amountOrString) {
+	ractive.set("formatMoney", amountOrString => {
 		return "$" + parseFloat(amountOrString).toFixed(2);
+	});
+
+	ractive.set("billFullyPaid", bill => {
+		console.log(bill);
+		return bill.payers.find(p => p.paid == "false") ? false : true;
 	});
 
 	// AJAX form submission
@@ -467,4 +477,5 @@ $.when.apply(null, reqs).then(function () {
 
 	refreshGroups();
 
+	//setTimeout(() => {$(document).foundation()}, 500);
 });

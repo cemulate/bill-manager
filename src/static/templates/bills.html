@@ -16,8 +16,8 @@
 
 {{#currentBills:i}}
 
-<div class="row">
-	<div class="large-12 columns panel">
+<div class="row column">
+	<div class="callout {{#if billFullyPaid(.)}} alert {{else}} primary {{/if}}">
 		<div class="row">
 			<div class="large-8 columns">
 				<h4>{{name}} ({{formatMoney(amount)}}) <span class="gray-text">&mdash; {{moment(parseInt(date)).format('MMMM Do')}}</span></h4>
@@ -27,14 +27,12 @@
 			</div>
 		</div>
 
-		<div class="vspace"></div>
-
 		<div class="row">
 
 			<div class="large-11 columns">
 				{{#if payers.length < 2}}
 					{{#payers}}
-						<a class="button expand{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
+						<a class="button expanded{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
 							<span class="fill-to-ellipsis"><strong>{{memberNameById(userId)}}</strong>
 								{{#if paid == 'true'}}
 									paid {{formatMoney(amount)}}
@@ -49,9 +47,9 @@
 						</a>
 					{{/}}
 				{{else}}
-					<ul id="bill{{i}}-button-group" class="button-group even-{{payers.length}}">
+					<div id="bill{{i}}-button-group" class="button-group expanded">
 						{{#payers}}
-							<li><a class="button{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
+							<a class="button{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
 								<span class="fill-to-ellipsis">
 									<strong>{{memberNameById(userId)}}</strong>
 									{{#if paid == 'true'}}
@@ -64,17 +62,17 @@
 										<em>(paid bill)</em>
 									{{/if}}
 								</span>
-							</a></li>
+							</a>
 						{{/}}
-					</ul>
+					</div>
 				{{/if}}
 			</div>
 
 			<div class="large-1 columns">
 
-				<a class="button secondary expand" data-dropdown="memberDropdown{{i}}" aria-controls="memberDropdown{{i}}" aria-expanded="false"><strong>+</strong></a>
+				<!-- <a class="button secondary expand" data-dropdown="memberDropdown{{i}}" aria-controls="memberDropdown{{i}}" aria-expanded="false"><strong>+</strong></a>
 
-				<!-- Foundation needs unique id's in order to setup the JS dropdowns, so append index in order to make these elements unique per-bill -->
+				<!-- Foundation needs unique id's in order to setup the JS dropdowns, so append index in order to make these elements unique per-bill --
 				<ul id="memberDropdown{{i}}" class="f-dropdown" data-dropdown-content aria-hidden="true" tabindex="-1">
 
 					<li><a on-click="addAllMembersToBill"><strong>All</strong></a></li>
@@ -83,13 +81,13 @@
 					but then, addGroupMemberToBill would need access to the current bill. It cannot get it in the event context, because the event context will
 					be currentGroupMembers.N -- it cannot be passed as an argument either, because ractive does not allow a construct like {{../_id}} to access
 					the parent scope explicitly. So we resort to this ugly hack that takes the id of the current bill and returns a structure to iterate over
-					that 'saves' that bill id -->
+					that 'saves' that bill id --
 					{{#dropdownDataForBill(_id)}}
 						<li><a on-click="addGroupMemberToBill">{{name}}</a></li>
 					{{/}}
 
-					<li><a data-reveal-id="addMemberModal">More ...</a></li>
-				</ul>
+					<li><a data-open="addMemberModal">More ...</a></li>
+				</ul> -->
 			</div>
 
 		</div>
@@ -98,7 +96,7 @@
 
 {{/}}
 
-<div class="row">
+<!-- <div class="row">
 	<div class="large-12 columns panel">
 		<form id="newBillForm" class="form-elements-no-bottom" data-abide>
 			<div class="row">
@@ -124,4 +122,4 @@
 			</div>
 		</form>
 	</div>
-</div>
+</div> -->

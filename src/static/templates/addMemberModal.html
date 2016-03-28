@@ -1,4 +1,4 @@
-<div id="addMemberModal" class="reveal-modal tiny" data-reveal aria-labelledby="addMemberModal" aria-hidden="true" role="dialog">
+<div id="addMemberModal" class="reveal" data-reveal>
 	<div class="row">
 		<div class="large-12 columns">
 			<label>Search by name:
@@ -32,7 +32,7 @@
 			</div>
 		</div>
 	</div>
-	
+
 	{{#if emailInvalid}}
 		<div class="row">
 			<div class="large-12 columns">
@@ -46,5 +46,7 @@
 			<p><em>When a user registers with this email and chooses a name, they will be able to see that they are in this group</em></p>
 		</div>
 	</div>
-	<a class="close-reveal-modal" aria-label="Close">&#215;</a>
+	<button class="close-button" data-close aria-label="Close modal" type="button">
+    	<span aria-hidden="true">&times;</span>
+  	</button>
 </div>
