@@ -6,47 +6,15 @@
 			</label>
 		</div>
 	</div>
-	<div class="row">
-		<div class="large-12 columns">
+	<div class="column row">
 			<ul>
 				{{#userSearchResults}}
 					<li><a on-click="addMemberToCurrentGroup">{{name}} ({{email}})</a></li>
 				{{/}}
 			</ul>
-		</div>
-	</div>
-	<div class="row">
-		<div class="large-12 columns">
-			<p>Or, enter an email for a user that does not yet have an account:</p>
-		</div>
-	</div>
-	<div class="row">
-		<div class="large-12 columns">
-			<div class="row collapse">
-				<div class="large-10 columns">
-					<input id="addUnregisteredMemberModalInput" type="text">
-				</div>
-				<div class="large-2 columns">
-					<a on-click="addUnregisteredMemberToCurrentGroup" class="button postfix">Add</a>
-				</div>
-			</div>
-		</div>
 	</div>
 
-	{{#if emailInvalid}}
-		<div class="row">
-			<div class="large-12 columns">
-				<p><em>Enter a valid email address</em></p>
-			</div>
-		</div>
-	{{/if}}
-
-	<div class="row">
-		<div class="large-12 columns">
-			<p><em>When a user registers with this email and chooses a name, they will be able to see that they are in this group</em></p>
-		</div>
-	</div>
 	<button class="close-button" data-close aria-label="Close modal" type="button">
-    	<span aria-hidden="true">&times;</span>
-  	</button>
+  	<span aria-hidden="true">&times;</span>
+	</button>
 </div>

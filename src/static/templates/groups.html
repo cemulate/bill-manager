@@ -1,46 +1,41 @@
 {{#if loadingGroups}}
-	<div class="row">
-		<div class="large-12 columns">
-			<img class="ajax-loader" src="/images/ajax-loader.gif">
-		</div>
+	<div class="column row">
+		<img class="ajax-loader" src="/images/ajax-loader.gif">
 	</div>
 {{/if}}
 
 {{#if !loadingGroups && groups.length == 0}}
-	<div class="row panel faint">
-		<div class="large-12 columns">
-			<h4>No Groups</h4>
-		</div>
+	<div class="column row">
+		<h4>No Groups</h4>
 	</div>
 {{/if}}
 
 {{#groups}}
 
-<div class="row panel">
-	<div class="large-8 columns">
-		<h4><a href="#/groups/{{_id}}">{{name}}</a></h4>
-	</div>
-	<div class="large-4 columns">
-		<a class="right" on-click="deleteGroup">Delete</a>
+<div class="column row">
+	<div class="callout primary">
+		<div class="row">
+			<div class="large-11 columns">
+				<h4 style="margin-bottom:0px"><a href="#/groups/{{_id}}">{{name}}</a></h4>
+			</div>
+			<div class="large-1 columns">
+				<a class="button small expanded alert" on-click="deleteGroup" style="margin-bottom:0px">Delete</a>
+			</div>
+		</div>
 	</div>
 </div>
 
 {{/}}
 
-<div class="row">
-	<div class="large-12 columns panel">
-		<form id="newGroupForm" class="form-elements-no-bottom">
-			<div class="row">
-
-				<div class="large-6 columns">
-					<input class="taller" type="text" name="name" placeholder="Name" maxlength="30">
-				</div>
-
-				<div class="large-6 columns">
-					<input type="submit" class="button small expand" value="New Group">
-				</div>
-			
+<div class="column row">
+	<form id="newGroupForm">
+		<div class="row">
+			<div class="large-9 columns">
+				<input type="text" name="name" placeholder="Name" maxlength="30">
 			</div>
-		</form>	
-	</div>
+			<div class="large-3 columns">
+				<input type="submit" class="button expanded" value="New Group">
+			</div>
+		</div>
+	</form>
 </div>

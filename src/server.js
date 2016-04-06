@@ -31,14 +31,14 @@ billsdb.persistence.setAutocompactionInterval(60000);
 
 // Configure passport
 
-passport.serializeUser(function(user, done) {
-	// Persist just the user's id
+// Persist just the user's id
+passport.serializeUser((user, done) => {
 	done(null, user._id);
 });
 
-passport.deserializeUser(function(id, done) {
+passport.deserializeUser((id, done) => {
 	// Lookup user by id
-	usersdb.find({_id: id}, function(err, docs) {
+	usersdb.find({_id: id}, (err, docs) => {
 		done(null, docs[0]);
 	});
 });
@@ -46,9 +46,9 @@ passport.deserializeUser(function(id, done) {
 passport.use(new LocalStrategy({
 	usernameField: 'email',
 	passwordField: 'password'
-}, function(email, password, done) {
+}, (email, password, done) => {
 
-	usersdb.findOne({email: email}, function(err, user) {
+	usersdb.findOne({email: email}, (err, user) => {
 		if (!user) done(null, false, {error: 'User does not exist'});
 		// May have email in the system, but never registered for an account (no password):
 		if (!user.phash) done(null, false, {error: 'User does not exist'});
@@ -82,26 +82,26 @@ app.use(passport.session());
 
 // Log in to a user account
 // request parameters: {user}
-app.post('/login', passport.authenticate('local'), function(req, res, next) {
+app.post('/login', passport.authenticate('local'), (req, res, next) => {
 	res.send(req.user);
 });
 
 // Log out
-app.get('/logout', function(req, res, next) {
+app.get('/logout', (req, res, next) => {
 	req.logout();
 	res.redirect('/');
 });
 
 // Register a new user by email
 // request parameters: {email, password, name}
-app.post('/register', function(req, res, next) {
-	usersdb.findOne({email: req.body.email}, function(err, user) {
+app.post('/register', (req, res, next) => {
+	usersdb.findOne({email: req.body.email}, (err, user) => {
 		if (!user) {
 			usersdb.insert({email: req.body.email, phash: bcrypt.hashSync(req.body.password), name: req.body.name});
 			res.send("OK");
 		} else if (!user.phash) {
 			// Email already in system, but never registered
-			usersdb.update({_id: user._id}, {email: req.body.email, phash: bcrypt.hashSync(req.body.password), name: req.body.name}, {}, function(err, ur) {
+			usersdb.update({_id: user._id}, {email: req.body.email, phash: bcrypt.hashSync(req.body.password), name: req.body.name}, {}, (err, ur) => {
 				res.send("OK");
 			});
 		} else {
@@ -110,10 +110,10 @@ app.post('/register', function(req, res, next) {
 	});
 });
 
-app.post('/registerTemp', function(req, res, next) {
-	usersdb.findOne({email: req.body.email}, function(err, user) {
+app.post('/registerTemp', (req, res, next) => {
+	usersdb.findOne({email: req.body.email}, (err, user) => {
 		if (!user) {
-			usersdb.insert({email: req.body.email, name: req.body.email}, function(err, newUser) {
+			usersdb.insert({email: req.body.email, name: req.body.email}, (err, newUser) => {
 				res.send(newUser._id);
 			});
 		} else {
@@ -123,7 +123,7 @@ app.post('/registerTemp', function(req, res, next) {
 })
 
 // Halts the request passing through with a 401 if there is no user logged in
-var auth = function(req, res, next) {
+var auth = (req, res, next) => {
 	if (req.user) {
 		console.log("Authenticated request from ", req.user.email);
 		return next();
@@ -133,36 +133,36 @@ var auth = function(req, res, next) {
 };
 
 // Get the current user
-app.get('/login', auth, function(req, res, next) {
+app.get('/login', auth, (req, res, next) => {
 	res.send(req.user);
 });
 
 // Get up to 10 users whose name contains 'name'
-app.get('/users/:name', auth, function(req, res, next) {
-	usersdb.find({$where: function() {return this.name.indexOf(req.params.name) > -1}}).limit(10).exec(function(err, results) {
+app.get('/users/:name', auth, (req, res, next) => {
+	usersdb.find({$where: function() {return this.name.indexOf(req.params.name) > -1}}).limit(10).exec((err, results) => {
 		res.send(results);
 	});
 });
 
 // Make a user a member of a group
 // request parameters: {userId, groupId}
-app.post('/users/', auth, function(req, res, next) {
-	groupsdb.update({_id: req.body.groupId}, {$addToSet: {members: req.body.userId}}, {}, function(err, ur) {
+app.post('/users/', auth, (req, res, next) => {
+	groupsdb.update({_id: req.body.groupId}, {$addToSet: {members: req.body.userId}}, {}, (err, ur) => {
 		res.send("OK");
 	});
 });
 
 // Update a user
 // request parameters: {id, update (object containing the same fields as POST to /register)}
-app.put('/users/', auth, function(req, res, next) {
+app.put('/users/', auth, (req, res, next) => {
 
-	usersdb.findOne({_id: req.body.id}, function(err, user) {
+	usersdb.findOne({_id: req.body.id}, (err, user) => {
 		var replacement = user;
 		if (req.body.update.name) replacement.name = req.body.update.name;
 		if (req.body.update.email) replacement.email = req.body.update.email;
 		if (req.body.update.password) replacement.phash = bcrypt.hashSync(req.body.update.password);
 
-		usersdb.update({_id: req.body.id}, replacement, {}, function(err, ur) {
+		usersdb.update({_id: req.body.id}, replacement, {}, (err, ur) => {
 			if (err) return res.status(500).send("Error updating user");
 			res.send("OK");
 		});
@@ -170,8 +170,8 @@ app.put('/users/', auth, function(req, res, next) {
 });
 
 // Returns groups for which the currently logged in user is a member
-app.get('/groups', auth, function(req, res, next) {
-	groupsdb.find({$where: function() {return _.contains(this.members, req.user._id)}}, function(err, groups) {
+app.get('/groups', auth, (req, res, next) => {
+	groupsdb.find({$where: function() {return this.members.indexOf(req.user._id) > -1}}, (err, groups) => {
 		if (err) return res.status(500).status("Database lookup error");
 		res.send(groups);
 	});
@@ -180,8 +180,8 @@ app.get('/groups', auth, function(req, res, next) {
 
 // Create a new group
 // request parameters: {<group parameters>}
-app.post('/groups', auth, function(req, res, next) {
-	groupsdb.insert(req.body, function(err, nr) {
+app.post('/groups', auth, (req, res, next) => {
+	groupsdb.insert(req.body, (err, nr) => {
 		if (err) return res.status(500).send("Error adding group");
 		res.send("OK");
 	});
@@ -189,8 +189,8 @@ app.post('/groups', auth, function(req, res, next) {
 
 // Update a group
 // request parameters: {id, newGroup}
-app.put('/groups', auth, function(req, res, next) {
-	groupsdb.update({_id: req.body.id}, req.body.newGroup, {}, function(err, ur) {
+app.put('/groups', auth, (req, res, next) => {
+	groupsdb.update({_id: req.body.id}, req.body.newGroup, {}, (err, ur) => {
 		if (err) return res.status(500).send("Error updating group");
 		res.send("OK");
 	});
@@ -198,31 +198,31 @@ app.put('/groups', auth, function(req, res, next) {
 
 // Delete a group
 // request parameters: {id}
-app.delete('/groups', auth, function(req, res, next) {
-	groupsdb.remove({_id: req.body.id}, {}, function(err, nr) {
+app.delete('/groups', auth, (req, res, next) => {
+	groupsdb.remove({_id: req.body.id}, {}, (err, nr) => {
 		if (err) return res.status(500).send("Error deleting group");
 		res.send("OK");
 	});
 });
 
 // Get the bills associated with the group of id 'groupId'
-app.get('/bills/:groupId', auth, function(req, res, next) {
-	billsdb.find({owner: req.params.groupId}).sort({date: -1}).exec(function(err, bills) {
+app.get('/bills/:groupId', auth, (req, res, next) => {
+	billsdb.find({owner: req.params.groupId}).sort({date: -1}).exec((err, bills) => {
 		res.send(bills);
 	});
 });
 
 // Create a new bill
 // request parameters: {<bill parameters>}
-app.post('/bills', auth, function(req, res, next) {
+app.post('/bills', auth, (req, res, next) => {
 	billsdb.insert(req.body);
 	res.send("OK");
 });
 
 // Update a bill
 // request parameters: {id, replacement}
-app.put('/bills', auth, function(req, res, next) {
-	billsdb.update({_id: req.body.id}, req.body.replacement, {}, function(err, ur) {
+app.put('/bills', auth, (req, res, next) => {
+	billsdb.update({_id: req.body.id}, req.body.replacement, {}, (err, ur) => {
 		if (err) return res.status(500).send("Error updating bill");
 		res.send("OK");
 	});
@@ -230,30 +230,30 @@ app.put('/bills', auth, function(req, res, next) {
 
 // Delete a bill
 // request parameters: {id}
-app.delete('/bills', auth, function(req, res, next) {
-	billsdb.remove({_id: req.body.id}, {}, function(err, nr) {
+app.delete('/bills', auth, (req, res, next) => {
+	billsdb.remove({_id: req.body.id}, {}, (err, nr) => {
 		if (err) return res.status(500).send("Error deleting bill");
 		res.send("OK");
 	});
 });
 
 // Get the users that are responsible for paying the bill with id 'billId'
-app.get('/payers/:billId', auth, function(req, res, next) {
-	billsdb.find({_id: req.params.billId}, function(err, bills) {
-		usersdb.find({_id: {$in: bills[0].payers}}, function(err, users) {
+app.get('/payers/:billId', auth, (req, res, next) => {
+	billsdb.find({_id: req.params.billId}, (err, bills) => {
+		usersdb.find({_id: {$in: bills[0].payers}}, (err, users) => {
 			res.send(users);
 		});
 	});
 });
 
 // Get the members of the group with id 'groupId'
-app.get('/members/:groupId', auth, function(req, res, next) {
-	groupsdb.find({_id: req.params.groupId}, function(err, groups) {
+app.get('/members/:groupId', auth, (req, res, next) => {
+	groupsdb.find({_id: req.params.groupId}, (err, groups) => {
 		if (!groups[0]) {
 			res.status(500).send("Error retrieving group members");
 			return;
 		}
-		usersdb.find({_id: {$in: groups[0].members}}, function(err, users) {
+		usersdb.find({_id: {$in: groups[0].members}}, (err, users) => {
 			res.send(users);
 		});
 	});
@@ -267,6 +267,6 @@ var serverPort = process.env.OPENSHIFT_NODEJS_PORT || 8000;
 var serverIPAddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 
 // Launch the app
-app.listen(serverPort, serverIPAddress, function() {
+app.listen(serverPort, serverIPAddress, () => {
 	console.log('Server running');
 });

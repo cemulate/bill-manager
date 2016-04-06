@@ -87,99 +87,111 @@ $.when.apply(null, reqs).then(() => {
 	});
 
 	ractive.set("billFullyPaid", bill => {
-		console.log(bill);
-		return bill.payers.find(p => p.paid == "false") ? false : true;
+		return bill ? (bill.payers.find(p => p.paid == "false") ? false : true) : false;
 	});
 
-	// AJAX form submission
-
-	$("#loginForm").submit(event => {
-		var values = {};
-		for (let field of $('#loginForm').serializeArray()) {
-			values[field.name] = field.value;
-		}
-		values.email = values.email.toLowerCase();
-		if (isEmail(values.email)) {
-			$.post('/login', values, data => {
-				ractive.set("currentUser", data);
-			});
-		}
-		event.preventDefault();
-	});
-
-	$("#registerForm").submit(event => {
-		var values = {}
-		for (let field of $('#registerForm').serializeArray()) {
-			values[field.name] = field.value;
-		}
-		values.email = value.email.toLowerCase();
-		if (isEmail(values.email)) {
-			if (values.password == values.passwordConfirm) {
-				$.post('/register', values, data => {
-					ractive.set("registeredSuccessfully", true);
+	$(document).arrive("#loginForm", {onceOnly: false, existing: true}, () => {
+		console.log("Initializing loginForm");
+		$("#loginForm").submit(event => {
+			var values = {};
+			for (let field of $('#loginForm').serializeArray()) {
+				values[field.name] = field.value;
+			}
+			values.email = values.email.toLowerCase();
+			if (isEmail(values.email)) {
+				$.post('/login', values, data => {
+					ractive.set("currentUser", data);
 				});
 			}
-		}
-		event.preventDefault();
-	});
-
-	$("#newBillForm").submit(event => {
-		var values = {}
-		for (let field of $('#newBillForm').serializeArray()) {
-			values[field.name] = field.value;
-		}
-		if ($.isNumeric(values.amount)) {
-			values.owner = ractive.get("currentGroup._id");
-			values.payers = [{
-				userId: ractive.get("currentUser._id"),
-				paid: "owner"
-			}];
-			values.date = new Date().getTime();
-			$.post('/bills', values, data => {
-				refreshBills();
-			});
-		}
-		event.preventDefault();
-	});
-
-	$("#newGroupForm").submit(event => {
-		var values = {}
-		for (let field of $('#newGroupForm').serializeArray()) {
-			values[field.name] = field.value;
-		}
-		values.members = [ractive.get("currentUser._id")];
-		values.bills = [];
-		$.post('/groups', values, data => {
-			refreshGroups();
+			event.preventDefault();
 		});
-		event.preventDefault();
 	});
 
-	$("#userEditForm").submit(event => {
-		var values = {}
-		for (let field of $('#userEditForm').serializeArray()) {
-			values[field.name] = (field.value == "") ? null : field.value;
-		}
-
-		var replacement = {};
-		if (values.name) replacement.name = values.name;
-		if (values.email) replacement.email = values.email;
-		if (values.password) replacement.password = values.password;
-
-		if (values.password == values.passwordConfirm) {
-			$.ajax('/users', {
-				method: "PUT",
-				data: {
-					id: ractive.get("currentUser._id"),
-					update: replacement
-				},
-				success: () => {
-					ractive.set("editedUserSuccessfully", true);
-					refreshCurrentUser();
+	$(document).arrive("#registerForm", {onceOnly: false, existing: true}, () => {
+		console.log("Initializing registerForm");
+		$("#registerForm").submit(event => {
+			var values = {};
+			for (let field of $('#registerForm').serializeArray()) {
+				values[field.name] = field.value;
+			}
+			values.email = value.email.toLowerCase();
+			if (isEmail(values.email)) {
+				if (values.password == values.passwordConfirm) {
+					$.post('/register', values, data => {
+						ractive.set("registeredSuccessfully", true);
+					});
 				}
+			}
+			event.preventDefault();
+		});
+	});
+
+	$(document).arrive("#newBillForm", {onceOnly: false, existing: true}, () => {
+		console.log("Initializing newBillForm");
+		$("#newBillForm").submit(event => {
+			var values = {};
+			for (let field of $('#newBillForm').serializeArray()) {
+				values[field.name] = field.value;
+			}
+			if ($.isNumeric(values.amount)) {
+				values.owner = ractive.get("currentGroup._id");
+				values.payers = [{
+					userId: ractive.get("currentUser._id"),
+					paid: "owner"
+				}];
+				values.date = new Date().getTime();
+				$.post('/bills', values, data => {
+					refreshBills();
+				});
+			}
+			event.preventDefault();
+		});
+	});
+
+	$(document).arrive("#newGroupForm", {onceOnly: false, existing: true}, () => {
+		console.log("Initializing newGroupForm");
+		$("#newGroupForm").submit(event => {
+			var values = {};
+			for (let field of $('#newGroupForm').serializeArray()) {
+				values[field.name] = field.value;
+			}
+			values.members = [ractive.get("currentUser._id")];
+			values.bills = [];
+			$.post('/groups', values, data => {
+				refreshGroups();
 			});
-		}
-		event.preventDefault();
+			event.preventDefault();
+		});
+	});
+
+	$(document).arrive("#userEditForm", {onceOnly: false, existing: true}, () => {
+		console.log("Initializing userEditForm");
+		$("#userEditForm").submit(event => {
+			var values = {};
+			for (let field of $('#userEditForm').serializeArray()) {
+				values[field.name] = (field.value == "") ? null : field.value;
+			}
+
+			var replacement = {};
+			if (values.name) replacement.name = values.name;
+			if (values.email) replacement.email = values.email;
+			if (values.password) replacement.password = values.password;
+
+			if (values.password == values.passwordConfirm) {
+				$.ajax('/users', {
+					method: "PUT",
+					data: {
+						id: ractive.get("currentUser._id"),
+						update: replacement
+					},
+					success: () => {
+						ractive.set("editedUserSuccessfully", true);
+						refreshCurrentUser();
+					}
+				});
+			}
+			event.preventDefault();
+		});
 	});
 
 	// Request a user search by name
@@ -225,6 +237,7 @@ $.when.apply(null, reqs).then(() => {
 			$.get('/bills/' + ractive.get("currentGroup._id"), data => {
 				ractive.set("currentBills", data);
 				// Re-foundation the document so newly rendered JS dropdowns will work ~10ms later (this is dirty af help pls)
+				setTimeout(() => $(document).foundation(), 10);
 				ractive.set("loadingBills", false);
 			});
 		} else {
@@ -338,7 +351,7 @@ $.when.apply(null, reqs).then(() => {
 				userId: event.context._id
 			}, refreshBills);
 		}
-		$("#addMemberModal").foundation("reveal", "close");
+		$("#addMemberModal").foundation("close");
 	});
 
 	ractive.on("addUnregisteredMemberToCurrentGroup", event => {
@@ -353,7 +366,7 @@ $.when.apply(null, reqs).then(() => {
 				userId: newUserId
 			}, populateMembers);
 		});
-		$("#addMemberModal").foundation("reveal", "close");
+		$("#addMemberModal").foundation("close");
 	});
 
 	// Mark a user paid/not paid on a bill
@@ -440,7 +453,7 @@ $.when.apply(null, reqs).then(() => {
 		} else {
 			updateBills();
 			ractive.set("reconcileData", null);
-			$("#reconcileModal").foundation("reveal", "close");
+			$("#reconcileModal").foundation("close");
 		}
 	});
 
@@ -477,5 +490,5 @@ $.when.apply(null, reqs).then(() => {
 
 	refreshGroups();
 
-	//setTimeout(() => {$(document).foundation()}, 500);
+	console.log(ractive);
 });
