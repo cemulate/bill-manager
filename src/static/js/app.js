@@ -221,11 +221,11 @@ $.when.apply(null, reqs).then(() => {
 
 	var reFoundation = function() {
 		setTimeout(() => {
-			$(".hidden-until-foundation").hide();
+			$(".foundation-plugin").hide();
 			setTimeout(() => {
-				$(".hidden-until-foundation").foundation();
-				$(".hidden-until-foundation").show();
-			}, 500);
+				$(".foundation-plugin").foundation();
+				$(".foundation-plugin").show();
+			}, 350);
 		}, 100);
 	};
 
@@ -503,4 +503,5 @@ $.when.apply(null, reqs).then(() => {
 	router.setRoute("");
 
 	refreshGroups();
+	console.log(ractive);
 });
