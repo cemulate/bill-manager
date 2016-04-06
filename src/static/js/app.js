@@ -219,6 +219,16 @@ $.when.apply(null, reqs).then(() => {
 			.fail((xhr, status, error) => ractive.set("currentUser", null));
 	};
 
+	var reFoundation = function() {
+		setTimeout(() => {
+			$(".hidden-until-foundation").hide();
+			setTimeout(() => {
+				$(".hidden-until-foundation").foundation();
+				$(".hidden-until-foundation").show();
+			}, 500);
+		}, 100);
+	};
+
 	// See if a session exists; log in
 	refreshCurrentUser();
 
@@ -236,8 +246,6 @@ $.when.apply(null, reqs).then(() => {
 		if (ractive.get("currentGroup")) {
 			$.get('/bills/' + ractive.get("currentGroup._id"), data => {
 				ractive.set("currentBills", data);
-				// Re-foundation the document so newly rendered JS dropdowns will work ~10ms later (this is dirty af help pls)
-				setTimeout(() => $(document).foundation(), 10);
 				ractive.set("loadingBills", false);
 			});
 		} else {
@@ -268,6 +276,12 @@ $.when.apply(null, reqs).then(() => {
 	// When the user logs in with a valid user, refresh the group list
 	ractive.observe("currentUser", (newVal, oldVal, keypath) => {
 		if (ractive.get("currentUser")) refreshGroups();
+	});
+
+	ractive.observe("currentGroup", (newVal, oldVal, keypath) => {
+		if (newVal != null) {
+			reFoundation();
+		}
 	});
 
 	// Delete a group
@@ -489,6 +503,4 @@ $.when.apply(null, reqs).then(() => {
 	router.setRoute("");
 
 	refreshGroups();
-
-	console.log(ractive);
 });

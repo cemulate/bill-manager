@@ -1,23 +1,23 @@
 <div class="row">
-	<div class="large-12 columns">
-		Hello, {{currentUser.name}}. Edit any information you would like to change below and hit submit.
+	<div class="small-6 small-centered columns">
+		Edit any information you would like to change below and hit submit
 	</div>
 </div>
 
-<hr>
+<div style="height:20px"></div>
 
-<form id="userEditForm" data-abide>
+<form id="userEditForm">
 	<div class="row">
-		<div class="large-12 columns">
+		<div class="small-6 small-centered columns">
 			<div class="name-field">
 				<label>Name:
 					<input type="text" name="name" placeholder="{{currentUser.name}}" maxlength="50">
 				</label>
-			</div>	
+			</div>
 		</div>
 	</div>
 	<div class="row">
-		<div class="large-12 columns">
+		<div class="small-6 small-centered columns">
 			<div class="email-field">
 				<label>Email:
 					<input type="text" name="email" placeholder="{{currentUser.email}}" maxlength="50">
@@ -26,7 +26,7 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="large-12 columns">
+		<div class="small-6 small-centered columns">
 			<div class="password-field">
 				<label>Password:
 					<input id="password" type="password" name="password" placeholder="(unchanged)" maxlength="50">
@@ -35,18 +35,17 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="large-12 columns">
+		<div class="small-6 small-centered columns">
 			<div class="password-confirmation-field">
 				<label>Password (again):
-					<input type="password" name="passwordConfirm" placeholder="(unchanged)" data-equalto="password" maxlength="50">
-					<small class="error">Passwords don't match</small>
+					<input type="password" name="passwordConfirm" placeholder="(unchanged)" maxlength="50">
 				</label>
 			</div>
 		</div>
 	</div>
 	<div class="row">
-		<div class="large-12 columns">
-			<input type="submit" class="button small expand{{#if editedUserSuccessfully}} success {{/if}}" value="{{editedUserSuccessfully ? 'Information updated' : 'Submit'}}">
+		<div class="small-6 small-centered columns">
+			<input type="submit" class="button small expanded{{#if editedUserSuccessfully}} success {{/if}}" value="{{editedUserSuccessfully ? 'Information updated' : 'Submit'}}">
 		</div>
 	</div>
 </form>
