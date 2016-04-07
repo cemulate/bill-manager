@@ -1,0 +1,70 @@
+<div class="column row">
+  <select value="{{selectedUserId}}">
+    <option value=""><strong>Select a Group Member</strong></option>
+    {{#currentGroupMembers}}
+      <option value="{{_id}}">{{name}}</option>
+    {{/}}
+  </select>
+</div>
+
+<div class="column row">
+  {{#if selectedUserId != ""}}
+    <div class="button-group small expanded">
+      <a class="button" on-click="addGroupMemberToBill" {{#if (selectedBill == null) || (selectedUserId == "")}} disabled {{/if}}><strong>Add</strong></a>
+      <a class="button" on-click="removeGroupMemberFromBill" {{#if (selectedBill == null) || (selectedUserId == "")}}  disabled {{/if}}><strong>Remove</strong></a>
+    </div>
+  {{else}}
+    <a on-click="addAllMembersToBill" class="button small expanded"  {{#if (selectedBill == null)}} disabled {{/if}}><strong>Add all members</strong></a>
+  {{/if}}
+</div>
+
+<hr>
+
+<div class="column row">
+  <p>
+    {{#if reconcileTotal >= 0}} You owe {{memberNameById(selectedUserId)}} {{else}} {{memberNameById(selectedUserId)}} owes you {{/if}}
+    <strong>{{formatMoney(Math.abs(reconcileTotal))}}</strong>
+  </p>
+<div class="column row">
+  <a on-click="reconcileAndResolve" class="button small expanded">Resolve outstanding</a>
+</div>
+
+<hr>
+
+<form id="newBillForm">
+  <div class="column row">
+    <input type="text" name="name" placeholder="Name">
+  </div>
+  <div class="column row">
+    <input type="text" name="amount" placeholder="Amount">
+  </div>
+  <div class="column row">
+    <input type="submit" class="button expanded" value="New Bill">
+  </div>
+</form>
+
+<hr>
+
+<div class="column row">
+  <p>Add a member to this group:</p>
+</div>
+<div class="column row">
+  <input id="addMemberToGroupInput" type="text" placeholder="Name" maxlength="50">
+</div>
+
+<div class="column row">
+  {{#if userSearchResults.length > 0}}
+    <table>
+      <thead>
+        <tr>
+          <th>Results</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#userSearchResults}}
+  				<tr><td><a on-click="addMemberToCurrentGroup">{{name}} ({{email}})</a></td></tr>
+  			{{/}}
+      </tbody>
+    </table>
+  {{/if}}
+</div>

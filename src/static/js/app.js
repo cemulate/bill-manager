@@ -2,7 +2,7 @@ var isEmail = function(x) {
 	return (/^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*\.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,5})?$/i.test(x));
 }
 
-var partials = ["login", "register", "userEdit", "groups", "bills", "addMemberModal", "reconcileModal", "topBar"];
+var partials = ["login", "register", "userEdit", "groups", "bills", "billsSidebar", "topBar"];
 var templates = {};
 var appTemplate = null;
 
@@ -46,10 +46,12 @@ $.when.apply(null, reqs).then(() => {
 			currentGroupMembers: null,
 			currentBills: [],
 			loadingBills: false,
+			selectedBill: null,
+			selectedUserId: "",
 
 			userSearchResults: [],			// Add Member Modal partial
 
-			reconcileData: null,			// Reconcile Modal partial
+			reconcileTotal: 0,
 		}
 	});
 
@@ -64,31 +66,15 @@ $.when.apply(null, reqs).then(() => {
 		}
 	});
 
-	// An awful hack because Ractive doesn't allow access to the parent scope inside a section (#)
-	ractive.set("dropdownDataForBill", billId => {
-		if (!billId) return {};
-		var bill = ractive.get("currentBills").find(x => (x._id == billId));
-		var currentGroupMembers = ractive.get("currentGroupMembers");
-		var data = [];
-		for (let gm of currentGroupMembers) {
-			if (bill.payers.map(x => x._id).indexOf(gm._id) == -1) {
-				data.push({
-					billId: bill._id,
-					userId: gm._id,
-					name: gm.name
-				});
-			}
-		}
-		return data;
-	});
-
 	ractive.set("formatMoney", amountOrString => {
 		return "$" + parseFloat(amountOrString).toFixed(2);
 	});
 
-	ractive.set("billFullyPaid", bill => {
-		return bill ? (bill.payers.find(p => p.paid == "false") ? false : true) : false;
-	});
+	ractive.set("currentUserIsPayer", () => {
+		var user = ractive.get("currentUser");
+		var bill = ractive.get("selectedBill");
+		return (bill.payers.find(x => (x.userId == user._id && x.paid == "owner"))) != null;
+	})
 
 	$(document).arrive("#loginForm", {onceOnly: false, existing: true}, () => {
 		console.log("Initializing loginForm");
@@ -196,20 +182,24 @@ $.when.apply(null, reqs).then(() => {
 
 	// Request a user search by name
 	var userSearch = function(name) {
-		$.get('/users/' + name, data => {
-			ractive.set("userSearchResults", data);
-		});
+		if (name == "") {
+			ractive.set("userSearchResults", []);
+		} else {
+			$.get('/users/' + name, data => {
+				ractive.set("userSearchResults", data);
+			});
+		}
 	}
 
 	// Trigger a user search when the user stops typing
 	// https://github.com/dennyferra/TypeWatch
-	$("#addMemberModalInput").typeWatch({
-		callback: () => {
-			userSearch($("#addMemberModalInput").val());
-		},
-		wait: 200,
-		highlight: true,
-		captureLength: 0
+	$(document).arrive("#addMemberToGroupInput", {onceOnly: false, existing: true}, () => {
+		$("#addMemberToGroupInput").typeWatch({
+			callback: () => userSearch($("#addMemberToGroupInput").val()),
+			wait: 200,
+			highlight: true,
+			captureLength: 0
+		});
 	});
 
 	// Refresh the info for the currently logged in user
@@ -273,147 +263,18 @@ $.when.apply(null, reqs).then(() => {
 		});
 	};
 
-	// When the user logs in with a valid user, refresh the group list
-	ractive.observe("currentUser", (newVal, oldVal, keypath) => {
-		if (ractive.get("currentUser")) refreshGroups();
-	});
-
-	ractive.observe("currentGroup", (newVal, oldVal, keypath) => {
-		if (newVal != null) {
-			reFoundation();
-		}
-	});
-
-	// Delete a group
-	ractive.on("deleteGroup", event => {
-		$.ajax('/groups', {
-			method: "DELETE",
-			data: {
-				id: event.context._id
-			},
-			success: refreshGroups
-		});
-	});
-
-	// Delete a bill
-	ractive.on("deleteBill", event => {
-		$.ajax('/bills', {
-			method: "DELETE",
-			data: {
-				id: event.context._id
-			},
-			success: refreshBills
-		});
-	});
-
-	// Add a group member to a bill
-	ractive.on("addGroupMemberToBill", event => {
-
-		// Event context: {userId, billId, name} because of dropdownContentForBill hack (eeeeuuuughh)
-
-		var bill = ractive.get("currentBills").find(bill => (bill._id == event.context.billId));
-		var bIndex = ractive.get("currentBills").indexOf(bill);
-		var payers = bill.payers;
-		var payerIds = payers.map(x => x.userId);
-		if (payerIds.indexOf(event.context.userId) == -1) {
-			payers.push({
-				userId: event.context.userId,
-				paid: "false"
-			});
-			var setKeypath = "currentBills." + bIndex + ".payers";
-			ractive.set(setKeypath, payers);
-
-			$.ajax('/bills', {
-				method: "PUT",
-				data: {
-					id: bill._id,
-					replacement: bill
-				}
-			});
-		}
-	});
-
-	// Add all the group members to a bill
-	ractive.on("addAllMembersToBill", event => {
-		var bill = event.context;
-
-		for (let member of ractive.get("currentGroupMembers")) {
-			if (bill.payers.map(x => x.userId).indexOf(member._id) == -1) {
-				bill.payers.push({
-					userId: member._id,
-					paid: "false"
-				});
-			}
-		}
-
-		$.ajax('/bills', {
-			method: "PUT",
-			data: {
-				id: bill._id,
-				replacement: bill
-			},
-			success: refreshBills
-		});
-	});
-
-	// Add a member to the current group
-	ractive.on("addMemberToCurrentGroup", event => {
-		var current = ractive.get("currentGroup").members;
-		if (current.indexOf(event.context._id) == -1) {
-			$.post('/users', {
-				groupId: ractive.get("currentGroup._id"),
-				userId: event.context._id
-			}, refreshBills);
-		}
-		$("#addMemberModal").foundation("close");
-	});
-
-	ractive.on("addUnregisteredMemberToCurrentGroup", event => {
-		var email = $("#addUnregisteredMemberModalInput").val();
-		if (!isEmail(email)) {
-			ractive.set("emailInvalid", true);
-			return;
-		}
-		$.post('/registerTemp', {email: email}, function(newUserId) {
-			$.post('/users', {
-				groupId: ractive.get("currentGroup._id"),
-				userId: newUserId
-			}, populateMembers);
-		});
-		$("#addMemberModal").foundation("close");
-	});
-
-	// Mark a user paid/not paid on a bill
-	ractive.on("togglePaid", event => {
-		if (event.context.paid == "owner") return;
-
-		var current = (event.context.paid == "true");
-		ractive.set(event.keypath + ".paid", (!current).toString());
-
-		var components = event.keypath.split(".");
-		var billKeypath = components.slice(0, 2).join(".");
-
-		var bill = ractive.get(billKeypath);
-
-		$.ajax('/bills', {
-			method: "PUT",
-			data: {
-				id: bill._id,
-				replacement: bill
-			}
-		});
-	});
-
-	ractive.on("clearReconcileData", event => {
-		ractive.set("reconcileData", null);
-	});
-
-	ractive.on("reconcileWith", (event, actuallyMarkPaid) => {
+	var doReconcile = function(actuallyMarkPaid) {
 		var bills = ractive.get("currentBills");
 
 		var me = ractive.get("currentUser");
-		var other = actuallyMarkPaid ? ractive.get("reconcileData.otherUser") : event.context;
+		var members = ractive.get("currentGroupMembers");
+		var other = members ? members.find(x => x._id == ractive.get("selectedUserId")) : null;
 		var owesOther = 0;
+
+		if (!other || (me._id == other._id)) {
+			ractive.set("reconcileTotal", 0);
+			return;
+		}
 
 		for (var i = 0; i < bills.length; i ++) {
 			var b = bills[i];
@@ -460,14 +321,160 @@ $.when.apply(null, reqs).then(() => {
 
 		if (!actuallyMarkPaid) {
 			// Just set the reconcile data
-			ractive.set("reconcileData", {
-				otherUser: other,
-				owesOther: owesOther
-			});
+			ractive.set("reconcileTotal", owesOther);
 		} else {
+			ractive.set("reconcileTotal", 0);
 			updateBills();
-			ractive.set("reconcileData", null);
-			$("#reconcileModal").foundation("close");
+		}
+	};
+
+	// When the user logs in with a valid user, refresh the group list
+	ractive.observe("currentUser", (newVal, oldVal, keypath) => {
+		if (newVal) refreshGroups();
+	});
+
+	ractive.observe("selectedUserId", (newVal, oldVal, keypath) => doReconcile());
+
+	// Delete a group
+	ractive.on("deleteGroup", event => {
+		$.ajax('/groups', {
+			method: "DELETE",
+			data: {
+				id: event.context._id
+			},
+			success: refreshGroups
+		});
+	});
+
+	// Delete a bill
+	ractive.on("deleteBill", event => {
+		$.ajax('/bills', {
+			method: "DELETE",
+			data: {
+				id: event.context._id
+			},
+			success: refreshBills
+		});
+	});
+
+	// Add a group member to a bill
+	ractive.on("addGroupMemberToBill", event => {
+
+		var bill = ractive.get("selectedBill");
+		var toAdd = ractive.get("selectedUserId");
+		var bIndex = ractive.get("currentBills").indexOf(bill);
+		var payers = bill.payers;
+		var payerIds = payers.map(x => x.userId);
+		if (payerIds.indexOf(toAdd) == -1) {
+			payers.push({
+				userId: toAdd,
+				paid: "false"
+			});
+			var setKeypath = "currentBills." + bIndex + ".payers";
+			ractive.set(setKeypath, payers);
+
+			$.ajax('/bills', {
+				method: "PUT",
+				data: {
+					id: bill._id,
+					replacement: bill
+				}
+			});
+		}
+	});
+
+	ractive.on("removeGroupMemberFromBill", event => {
+		var bill = ractive.get("selectedBill");
+		var toRemove = ractive.get("selectedUserId");
+		var bIndex = ractive.get("currentBills").indexOf(bill);
+		var payers = bill.payers;
+		var payerIds = payers.map(x => x.userId);
+		var pIndex = payerIds.indexOf(toRemove);
+		if (pIndex > -1) {
+			if (payers[pIndex].paid == "owner") return;
+			payers.splice(pIndex, 1);
+			var setKeypath = "currentBills." + bIndex + ".payers";
+			ractive.set(setKeypath, payers);
+
+			$.ajax('/bills', {
+				method: "PUT",
+				data: {
+					id: bill._id,
+					replacement: bill
+				}
+			});
+		}
+	})
+
+	// Add all the group members to a bill
+	ractive.on("addAllMembersToBill", event => {
+		var bill = ractive.get("selectedBill");
+
+		for (let member of ractive.get("currentGroupMembers")) {
+			if (bill.payers.map(x => x.userId).indexOf(member._id) == -1) {
+				bill.payers.push({
+					userId: member._id,
+					paid: "false"
+				});
+			}
+		}
+
+		$.ajax('/bills', {
+			method: "PUT",
+			data: {
+				id: bill._id,
+				replacement: bill
+			},
+			success: refreshBills
+		});
+	});
+
+	// Add a member to the current group
+	ractive.on("addMemberToCurrentGroup", event => {
+		var current = ractive.get("currentGroup").members;
+		if (current.indexOf(event.context._id) == -1) {
+			$.post('/users', {
+				groupId: ractive.get("currentGroup._id"),
+				userId: event.context._id
+			}, () => {
+				populateMembers();
+				ractive.set("userSearchResults", []);
+			});
+		}
+	});
+
+	// Mark a user paid/not paid on a bill
+	ractive.on("togglePaid", event => {
+		if (event.context.paid == "owner") return;
+
+		var current = (event.context.paid == "true");
+		ractive.set(event.keypath + ".paid", (!current).toString());
+
+		var components = event.keypath.split(".");
+		var billKeypath = components.slice(0, 2).join(".");
+
+		var bill = ractive.get(billKeypath);
+
+		$.ajax('/bills', {
+			method: "PUT",
+			data: {
+				id: bill._id,
+				replacement: bill
+			}
+		});
+
+		if (ractive.get("selectedUserId") == event.context.userId) doReconcile();
+
+		event.original.stopPropagation();
+	});
+
+	ractive.on("reconcileAndResolve", event => doReconcile(true));
+	ractive.on("selectBill", event => {
+		var cur = ractive.get("selectedBill");
+		if (cur && cur._id == event.context._id) {
+			ractive.set("selectedBill", null);
+		} else {
+			ractive.set("selectedBill", event.context);
 		}
 	});
 

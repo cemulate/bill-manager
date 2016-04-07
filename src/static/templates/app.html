@@ -1,45 +1,48 @@
-<!-- Display login if no user -->
-
 {{>topBar}}
 
 <div style="margin-bottom:20px"></div>
 
-{{#if !currentUser}}
+<div class="row expanded">
+	<div class="large-offset-2 large-8 columns">
+		{{#if !currentUser}}
 
-	{{#if appState == 'register'}}
+			{{#if appState == 'register'}}
 
-		{{>register}}
+				{{>register}}
 
-	{{else}}
+			{{else}}
 
-		{{>login}}
+				{{>login}}
 
-	{{/if}}
-
-{{else}}
-
-	{{#if appState == 'groups'}}
-
-		{{#if !currentGroup}}
-
-			{{>groups}}
+			{{/if}}
 
 		{{else}}
 
-			{{>bills}}
+			{{#if appState == 'groups'}}
+
+				{{#if !currentGroup}}
+
+					{{>groups}}
+
+				{{else}}
+
+					{{>bills}}
+
+				{{/if}}
+
+			{{/if}}
+
+			{{#if appState == 'userPage'}}
+
+				{{>userEdit}}
+
+			{{/if}}
 
 		{{/if}}
-
-	{{/if}}
-
-	{{#if appState == 'userPage'}}
-
-		{{>userEdit}}
-
-	{{/if}}
-
-{{/if}}
-
-{{>reconcileModal}}
-
-{{>addMemberModal}}
+	</div>
+	<div class="large-2 columns">
+		{{#if appState == 'groups' && currentGroup}}
+			{{>billsSidebar}}
+		{{/if}}
+	</div>
+</div>

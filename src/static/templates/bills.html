@@ -1,4 +1,4 @@
-<div class="column row">
+<!-- <div class="column row">
 	<form id="newBillForm">
 		<div class="row">
 			<div class="large-4 columns">
@@ -12,7 +12,7 @@
 			</div>
 		</div>
 	</form>
-</div>
+</div> -->
 
 {{#if loadingBills}}
 	<div class="row">
@@ -33,22 +33,20 @@
 {{#currentBills:i}}
 
 <div class="row column">
-	<div class="callout {{#if billFullyPaid(.)}} alert {{else}} primary {{/if}}">
+	<div class="callout {{#if _id == selectedBill._id}} primary {{/if}}" on-click="selectBill">
 		<div class="row">
 			<div class="large-11 columns">
 				<h4>{{name}} ({{formatMoney(amount)}}) <span class="gray-text">&mdash; {{moment(parseInt(date)).format('MMMM Do')}}</span></h4>
 			</div>
 			<div class="large-1 columns">
-				<a class="button small expanded alert" on-click="deleteBill">Delete</a>
+				<a class="button small hollow alert float-right" on-click="deleteBill">&times;</a>
 			</div>
 		</div>
 
-		<div class="row">
-
-			<div class="large-11 columns">
+		<div class="column row">
 				{{#if payers.length < 2}}
 					{{#payers}}
-						<a class="button expanded{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
+						<a style="margin-bottom:0px" class="button expanded{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
 							<span class="fill-to-ellipsis"><strong>{{memberNameById(userId)}}</strong>
 								{{#if paid == 'true'}}
 									paid {{formatMoney(amount)}}
@@ -82,31 +80,6 @@
 						{{/}}
 					</div>
 				{{/if}}
-			</div>
-
-			<div class="large-1 columns">
-
-				<ul id="memberDropdown{{i}}" class="dropdown menu foundation-plugin" data-dropdown-menu>
-					<li>
-						<a class="button expanded hollow secondary">Add</a>
-						<ul class="menu">
-							<li><a on-click="addAllMembersToBill"><strong>All</strong></a></li>
-
-							<!-- Here, I would like to iterate through currentGroupMembers, in order to populate them in this dropdown, with {{#currentGroupMembers}},
-							but then, addGroupMemberToBill would need access to the current bill. It cannot get it in the event context, because the event context will
-							be currentGroupMembers.N; it cannot be passed as an argument either, because ractive does not allow a construct like {{../_id}} to access
-							the parent scope explicitly. So we resort to this ugly hack that takes the id of the current bill and returns a structure to iterate over
-							that 'saves' that bill id -->
-							{{#dropdownDataForBill(_id)}}
-								<li><a on-click="addGroupMemberToBill">{{name}}</a></li>
-							{{/}}
-							<li><a data-open="addMemberModal">More ...</a></li>
-						</ul>
-					</li>
-				</ul>
-
-			</div>
-
 		</div>
 	</div>
 </div>
