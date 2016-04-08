@@ -10,6 +10,7 @@ var concat  = require('gulp-concat');
 var es      = require('event-stream');
 var runSeq  = require('run-sequence');
 var shell   = require('gulp-shell');
+var ghPages = require('gulp-gh-pages');
 
 gulp.task('clean', function () {
     // Clear the destination folder
