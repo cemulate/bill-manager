@@ -63,3 +63,8 @@ gulp.task('dist', function(cb) {
 gulp.task('default', function(cb) {
     runSeq('clean', ['copy', 'frontend', 'scripts', 'watch'], 'run', cb);
 });
+
+gulp.task('deploy', function() {
+  return gulp.src('./dist/**/*')
+    .pipe(ghPages());
+});
