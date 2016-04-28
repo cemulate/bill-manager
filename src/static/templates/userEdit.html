@@ -1,5 +1,5 @@
 <div class="row">
-	<div class="small-6 small-centered columns">
+	<div class="large-6 large-centered small-12 columns">
 		Edit any information you would like to change below and hit submit
 	</div>
 </div>
@@ -8,7 +8,7 @@
 
 <form id="userEditForm">
 	<div class="row">
-		<div class="small-6 small-centered columns">
+		<div class="large-6 large-centered small-12 columns">
 			<div class="name-field">
 				<label>Name:
 					<input type="text" name="name" placeholder="{{currentUser.name}}" maxlength="50">
@@ -17,7 +17,7 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="small-6 small-centered columns">
+		<div class="large-6 large-centered small-12 columns">
 			<div class="email-field">
 				<label>Email:
 					<input type="text" name="email" placeholder="{{currentUser.email}}" maxlength="50">
@@ -26,7 +26,7 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="small-6 small-centered columns">
+		<div class="large-6 large-centered small-12 columns">
 			<div class="password-field">
 				<label>Password:
 					<input id="password" type="password" name="password" placeholder="(unchanged)" maxlength="50">
@@ -35,7 +35,7 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="small-6 small-centered columns">
+		<div class="large-6 large-centered small-12 columns">
 			<div class="password-confirmation-field">
 				<label>Password (again):
 					<input type="password" name="passwordConfirm" placeholder="(unchanged)" maxlength="50">
@@ -44,8 +44,8 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="small-6 small-centered columns">
-			<input type="submit" class="button small expanded{{#if editedUserSuccessfully}} success {{/if}}" value="{{editedUserSuccessfully ? 'Information updated' : 'Submit'}}">
+		<div class="large-6 large-centered small-12 columns">
+			<input type="submit" class="button expanded{{#if editedUserSuccessfully}} success {{/if}}" value="{{editedUserSuccessfully ? 'Information updated' : 'Submit'}}">
 		</div>
 	</div>
 </form>

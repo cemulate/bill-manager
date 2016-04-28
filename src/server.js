@@ -49,11 +49,18 @@ passport.use(new LocalStrategy({
 }, (email, password, done) => {
 
 	usersdb.findOne({email: email}, (err, user) => {
-		if (!user) done(null, false, {error: 'User does not exist'});
+		if (!user) {
+			done(null, false, {error: 'User does not exist'});
+			return;
+		}
 		// May have email in the system, but never registered for an account (no password):
-		if (!user.phash) done(null, false, {error: 'User does not exist'});
+		if (!user.phash) {
+			done(null, false, {error: 'User does not exist'});
+			return;
+		}
 		if (bcrypt.compareSync(password, user.phash)) {
 			done(null, user);
+			return;
 		}
 		done(null, false, {error: 'Incorrect password'});
 	});

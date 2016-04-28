@@ -23,9 +23,13 @@
 {{/if}}
 
 {{#if !loadingBills && currentBills.length == 0}}
-	<div class="row panel faint">
-		<div class="large-12 columns">
-			<h4>No Bills</h4>
+	<div class="row column">
+		<div class="callout">
+			<div class="row">
+				<div class="large-12 small-12 columns">
+					<h4>No Bills</h4>
+				</div>
+			</div>
 		</div>
 	</div>
 {{/if}}
@@ -35,10 +39,10 @@
 <div class="row column">
 	<div class="callout {{#if _id == selectedBill._id}} primary {{/if}}" on-click="selectBill">
 		<div class="row">
-			<div class="large-11 columns">
-				<h4>{{name}} ({{formatMoney(amount)}}) <span class="gray-text">&mdash; {{moment(parseInt(date)).format('MMMM Do')}}</span></h4>
+			<div class="large-11 small-9 columns">
+				<h4 class="no-newline">{{name}} ({{formatMoney(amount)}}) <span class="gray-text">&mdash; {{moment(parseInt(date)).format('MMMM Do')}}</h4>
 			</div>
-			<div class="large-1 columns">
+			<div class="large-1 small-3 columns">
 				<a class="button small hollow alert float-right" on-click="deleteBill">&times;</a>
 			</div>
 		</div>
@@ -46,17 +50,17 @@
 		<div class="column row">
 				{{#if payers.length < 2}}
 					{{#payers}}
-						<a style="margin-bottom:0px" class="button expanded{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
-							<span class="fill-to-ellipsis"><strong>{{memberNameById(userId)}}</strong>
-								{{#if paid == 'true'}}
-									paid {{formatMoney(amount)}}
-								{{/if}}
-								{{#if paid == 'false'}}
-									owes {{formatMoney(amount)}}
-								{{/if}}
-								{{#if paid == 'owner'}}
-									<em>(paid bill)</em>
-								{{/if}}
+						<a class="no-bottom button expanded{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
+							<span><strong>{{memberNameById(userId)}}</strong>
+							{{#if paid == 'true'}}
+								paid {{formatMoney(amount)}}
+							{{/if}}
+							{{#if paid == 'false'}}
+								owes {{formatMoney(amount)}}
+							{{/if}}
+							{{#if paid == 'owner'}}
+								<em>(paid bill)</em>
+							{{/if}}
 							</span>
 						</a>
 					{{/}}
@@ -64,17 +68,19 @@
 					<div id="bill{{i}}-button-group" class="button-group expanded">
 						{{#payers}}
 							<a class="button{{#if paid == 'true' || paid == 'owner'}} success{{/if}}" on-click="togglePaid">
-								<span class="fill-to-ellipsis">
+								<span class="no-newline">
 									<strong>{{memberNameById(userId)}}</strong>
-									{{#if paid == 'true'}}
-										paid {{formatMoney(amount/(payers.length))}}
-									{{/if}}
-									{{#if paid == 'false'}}
-										owes {{formatMoney(amount/(payers.length))}}
-									{{/if}}
-									{{#if paid == 'owner'}}
-										<em>(paid bill)</em>
-									{{/if}}
+									<span class="hide-for-small-only">
+										{{#if paid == 'true'}}
+											paid {{formatMoney(amount/(payers.length))}}
+										{{/if}}
+										{{#if paid == 'false'}}
+											owes {{formatMoney(amount/(payers.length))}}
+										{{/if}}
+										{{#if paid == 'owner'}}
+											<em>(paid bill)</em>
+										{{/if}}
+									</span>
 								</span>
 							</a>
 						{{/}}

@@ -100,7 +100,7 @@ $.when.apply(null, reqs).then(() => {
 			for (let field of $('#registerForm').serializeArray()) {
 				values[field.name] = field.value;
 			}
-			values.email = value.email.toLowerCase();
+			values.email = values.email.toLowerCase();
 			if (isEmail(values.email)) {
 				if (values.password == values.passwordConfirm) {
 					$.post('/register', values, data => {

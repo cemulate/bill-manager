@@ -14,7 +14,7 @@
       <a class="button" on-click="removeGroupMemberFromBill" {{#if (selectedBill == null) || (selectedUserId == "")}}  disabled {{/if}}><strong>Remove</strong></a>
     </div>
   {{else}}
-    <a on-click="addAllMembersToBill" class="button small expanded"  {{#if (selectedBill == null)}} disabled {{/if}}><strong>Add all members</strong></a>
+    <a on-click="addAllMembersToBill" class="no-bottom button small expanded"  {{#if (selectedBill == null)}} disabled {{/if}}><strong>Add all members</strong></a>
   {{/if}}
 </div>
 
@@ -26,7 +26,7 @@
     <strong>{{formatMoney(Math.abs(reconcileTotal))}}</strong>
   </p>
 <div class="column row">
-  <a on-click="reconcileAndResolve" class="button small expanded">Resolve outstanding</a>
+  <a on-click="reconcileAndResolve" class="no-bottom button small expanded">Resolve outstanding</a>
 </div>
 
 <hr>
@@ -39,7 +39,7 @@
     <input type="text" name="amount" placeholder="Amount">
   </div>
   <div class="column row">
-    <input type="submit" class="button expanded" value="New Bill">
+    <input type="submit" class="no-bottom button expanded" value="New Bill">
   </div>
 </form>
 

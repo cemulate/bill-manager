@@ -1,18 +1,16 @@
 <div class="top-bar">
 	<div class="top-bar-left">
-		<ul class="dropdown menu" data-dropdown-menu>
-			<li class="menu-text">Bill Manager</li>
+		<ul class="menu" data-dropdown-menu>
+			<li><a href="#"><strong>Bill Manager</strong></a></li>
+			<li class="show-for-large-only"><a target="_blank" href="https://github.com/cemulate/bill-manager">View on Github</a></li>
+			{{#if currentUser}}
+			<li><a href="#/userPage">Logged in as {{currentUser.name}}</a></li>
+			{{/if}}
 		</ul>
 	</div>
 	<div class="top-bar-right">
 		<ul class="menu">
-			<li><a target="_blank" href="https://github.com/cemulate/bill-manager">View on Github</a></li>
-			{{#if currentUser}}
-
-			<li><a href="#/userPage">Logged in as {{currentUser.name}}</a></li>
 			<li><a href="/logout">Log out</a></li>
-
-			{{/if}}
 		</ul>
 	</div>
 </div>

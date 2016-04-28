@@ -22,6 +22,8 @@ gulp.task('copy', function () {
         gulp.src(['src/static/**/*.*', '!src/static/js/**/*.*'])
             .pipe(gulp.dest('dist/static')),
         gulp.src(['src/*.*'])
+            .pipe(gulp.dest('dist')),
+        gulp.src(['package.json'])
             .pipe(gulp.dest('dist'))
     );
 });
