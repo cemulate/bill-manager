@@ -3,7 +3,13 @@
 <div style="margin-bottom:20px"></div>
 
 <div class="row expanded">
-	<div class="large-offset-2 large-8 columns">
+	<div class="small-12 large-push-10 large-2 columns">
+		{{#if appState == 'groups' && currentGroup}}
+			{{>billsSidebar}}
+		{{/if}}
+	</div>
+
+	<div class="small-12 large-pull-2 large-8 columns">
 		{{#if !currentUser}}
 
 			{{#if appState == 'register'}}
@@ -38,11 +44,6 @@
 
 			{{/if}}
 
-		{{/if}}
-	</div>
-	<div class="large-2 columns">
-		{{#if appState == 'groups' && currentGroup}}
-			{{>billsSidebar}}
 		{{/if}}
 	</div>
 </div>
