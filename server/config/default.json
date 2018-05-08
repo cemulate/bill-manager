@@ -1,0 +1,11 @@
+{
+    "postgraphile": {
+        "username": "bm_postgraphile",
+        "password": "bm_password",
+        "database": "billmanager",
+        "schema": "bm",
+        "defaultRole": "bm_anonymous",
+        "jwtTokenIdentifier": "bm.jwt_token",
+        "jwtSecret": "secret"
+    }
+}
