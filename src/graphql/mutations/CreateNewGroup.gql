@@ -1,0 +1,12 @@
+mutation CreateNewGroup($name: String!) {
+    createGroupOwnedByCurrentPerson(input: { name: $name }) {
+        group {
+            id
+            name
+            owner {
+                id
+                bestIdentifier
+            }
+        }
+    }
+}

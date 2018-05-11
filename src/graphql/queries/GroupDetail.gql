@@ -1,0 +1,26 @@
+query GroupDetail($groupId: Int!) {
+    groupById(id: $groupId) {
+        id
+        owner {
+            id
+            bestIdentifier
+        }
+        members {
+            nodes {
+                id
+                bestIdentifier
+            }
+        }
+        billsByGroupId {
+            nodes {
+                id
+                name
+                amount
+                userByOwnerId {
+                    id
+                    bestIdentifier
+                }   
+            }
+        }
+    }
+}

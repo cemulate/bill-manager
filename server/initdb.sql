@@ -41,6 +41,33 @@ create table bm.group (
     created_at timestamp with time zone default now()
 );
 
+create function bm.group_owner(g bm.group) returns bm.user as $$
+    select bm.user.* from bm.user inner join bm.group on (bm.user.id = bm.group.owner_id) where bm.group.owner_id = g.id;
+$$ language sql stable;
+
+create function bm.create_group_owned_by_current_person(name text) returns bm.group as $$
+declare newgroup bm.group;
+begin
+    insert into bm.group ("name", "owner_id") values (name, current_setting('jwt.claims.user_id')::integer) returning bm.group.* into newgroup;
+    insert into bm.user_group (user_id, group_id) values (current_setting('jwt.claims.user_id')::integer, newgroup.id);
+    return newgroup;
+end;
+$$ language plpgsql;
+
+create table bm.user_group (
+    user_id integer not null references bm.user (id) on delete cascade,
+    group_id integer not null references bm.group (id) on delete cascade,
+    primary key (user_id, group_id)
+);
+
+create function bm.user_participating_groups(u bm.user) returns setof bm.group as $$
+    select bm.group.* from bm.group inner join bm.user_group on (bm.group.id = bm.user_group.group_id) where bm.user_group.user_id = u.id;
+$$ language sql stable;
+
+create function bm.group_members(g bm.group) returns setof bm.user as $$
+    select bm.user.* from bm.user inner join bm.user_group on (bm.user.id = bm.user_group.user_id) where bm.user_group.group_id = g.id;
+$$ language sql stable;
+
 create table bm.bill (
     id serial primary key,
     name text not null check (char_length(name) < 80),
@@ -50,26 +77,16 @@ create table bm.bill (
     created_at timestamp with time zone default now()
 );
 
-create table bm.user_group (
-    user_id integer not null references bm.user (id),
-    group_id integer not null references bm.group (id),
-    primary key (user_id, group_id)
-);
-
-create function bm.user_groups_by_user_id(u bm.user) returns setof bm.group as $$
-    select bm.group.* from bm.group inner join bm.user_group on (bm.group.id = bm.user_group.group_id) where bm.user_group.user_id = u.id;
-$$ language sql stable;
-
-create function bm.group_users_by_group_id(g bm.group) returns setof bm.user as $$
-    select bm.user.* from bm.user inner join bm.user_group on (bm.user.id = bm.user_group.user_id) where bm.user_group.group_id = g.id;
-$$ language sql stable;
-
 create table bm.user_bill (
     user_id integer not null references bm.user (id),
     bill_id integer not null references bm.bill (id),
     paid boolean not null default false,
     primary key (user_id, bill_id)
 );
+
+create function bm.bill_participating_users(b bm.bill) returns setof bm.user as $$
+    select bm.user.* from bm.user inner join bm.user_bill on (bm.user.id = bm.user_bill.user_id) where (bm.user_bill.bill_id = b.id);
+$$ language sql stable;
 
 -- Authentication
 

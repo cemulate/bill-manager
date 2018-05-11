@@ -1,0 +1,15 @@
+query Groups {
+    currentPerson {
+        id
+        participatingGroups {
+            nodes {
+                id
+                name
+                owner {
+                    id
+                    bestIdentifier
+                }
+            }
+        }
+    }
+}
