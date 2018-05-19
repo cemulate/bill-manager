@@ -144,6 +144,12 @@ begin
 end;
 $$ language plpgsql strict security definer;
 
+create function bm.current_user_id() returns integer as $$
+begin
+    return current_setting('jwt.claims.user_id')::integer;
+end;
+$$ language plpgsql stable;
+
 create function bm.current_person() returns bm.user as $$
     select * from bm.user where bm.user.id = current_setting('jwt.claims.user_id')::integer
 $$ language sql stable;
