@@ -3,6 +3,8 @@
         "username": "bm_postgraphile",
         "password": "bm_password",
         "database": "billmanager",
+        "host": "db",
+        "port": 5432,
         "schema": "bm",
         "defaultRole": "bm_anonymous",
         "jwtTokenIdentifier": "bm.jwt_token",

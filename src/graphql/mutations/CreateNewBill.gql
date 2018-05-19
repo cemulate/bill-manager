@@ -1,0 +1,7 @@
+mutation CreateNewBill($groupId: Int!) {
+    createBill(input: { name: "", amount: "0.00", groupId: $groupId }) {
+        bill {
+            id
+        }
+    }
+}

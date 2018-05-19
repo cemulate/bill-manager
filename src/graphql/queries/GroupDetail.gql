@@ -11,15 +11,16 @@ query GroupDetail($groupId: Int!) {
                 bestIdentifier
             }
         }
-        billsByGroupId {
+        billsByGroupId(orderBy: CREATED_AT_DESC) {
             nodes {
                 id
                 name
                 amount
+                createdAt
                 userByOwnerId {
                     id
                     bestIdentifier
-                }   
+                }
             }
         }
     }

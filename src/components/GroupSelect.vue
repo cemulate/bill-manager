@@ -47,9 +47,9 @@ export default {
             if (this.newGroupName.length == 0) return;
             try {
                 let result = await this.$apollo.mutate({ mutation: CreateNewGroupMutation, variables: { name: this.newGroupName } });
-                let newGroup = result.data.createGroupOwnedByCurrentPerson.group;
+                let newGroupId = result.data.createGroup.group.id;
                 await this.$apollo.queries.groups.refetch();
-                this.$emit('select-group', newGroup);
+                this.$emit('select-group', this.groups.find(x => x.id == newGroupId));
             } catch (err) {
                 console.log(err);
             }

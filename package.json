@@ -4,9 +4,10 @@
   "description": "A new web application",
   "author": "Author",
   "scripts": {
-    "start": "cross-env NODE_CONFIG_DIR=server/config node server/server.js",
-    "watch": "webpack --mode development --watch --colors",
-    "build": "webpack --mode production"
+    "production": "cross-env NODE_ENV=production NODE_CONFIG_DIR=server/config node server/server.js",
+    "development": "cross-env NODE_ENV=development NODE_CONFIG_DIR=server/config nodemon -i src server/server.js",
+    "build": "webpack --mode production",
+    "start": "cross-env NODE_CONFIG_DIR=server/config node server/server.js"
   },
   "devDependencies": {
     "cross-env": "^5.1.4",
@@ -31,13 +32,19 @@
     "bulma": "^0.7.1",
     "config": "^1.30.0",
     "copy-webpack-plugin": "^4.5.1",
+    "date-fns": "^1.29.0",
     "express": "^4.16.3",
     "graphql": "~0.12",
     "graphql-tag": "^2.8.0",
+    "lodash": "^4.17.10",
+    "money-math": "^2.5.1",
+    "nodemon": "^1.17.4",
+    "pg": "^7.4.3",
     "postgraphile": "^4.0.0-beta.5",
     "vue": "^2.5.16",
     "vue-apollo": "^3.0.0-beta.5",
     "vue-loader": "^15.0.9",
-    "vue-template-compiler": "^2.5.16"
+    "vue-template-compiler": "^2.5.16",
+    "webpack-dev-middleware": "^3.1.3"
   }
 }

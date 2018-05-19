@@ -22,41 +22,90 @@
     </div>
 
     <div v-if="group != null && selectedTab == 1">
-        <nav class="level" v-for="bill in bills" v-bind:key="bill.id">
+        <nav class="level">
             <div class="level-left">
-                <div class="level-item is-size-4">
-                    {{ bill.name }}
+                <div class="level-item">
+                    <a class="button is-link" v-on:click="createNewBill"><font-awesome-icon icon="plus"></font-awesome-icon>&nbsp; New Bill</a>
                 </div>
             </div>
             <div class="level-right">
-                <div class="level-item is-size-4">
-                    ${{ bill.amount }}
+                <div class="level-item">
+                    
                 </div>
             </div>
         </nav>
+        <section v-for="{ month, bills } in billsByMonth" v-bind:key="month">
+            <span class="is-size-4">{{ formatMonthHeading(month) }}</span>
+            <hr>
+            <bill-detail 
+              v-bind:current-user="currentUser"
+              v-bind:group="group"
+              v-for="bill in bills" 
+              v-bind:bill-id="bill.id" 
+              v-bind:key="bill.id"
+              v-bind:open-modal="recentlyCreatedBillId == bill.id"
+              v-on:did-open-modal="recentlyCreatedBillId = null"
+            >
+            </bill-detail>
+        </section>
     </div>
 
 </div>
 </template>
 
 <script>
+import EventBus from '../util/event-bus.js';
+
+import BillDetail from './BillDetail.vue';
+
 import GroupDetailQuery from '../graphql/queries/GroupDetail.gql';
+import CreateNewBillMutation from '../graphql/mutations/CreateNewBill.gql';
+
+import FontAwesomeIcon from '@fortawesome/vue-fontawesome';
+import { faPlus } from '@fortawesome/fontawesome-free-solid';
+
+import groupBy from 'lodash/groupBy';
+import { parse, format, startOfMonth } from 'date-fns';
 
 export default {
     data: () => ({
         group: null,
-        selectedTab: 0,
+        selectedTab: 1,
+        recentlyCreatedBillId: null,
     }),
     props: {
+        currentUser: Object,
         groupId: Number,
     },
     computed: {
         nonOwnerMembers() {
             return this.group.members.nodes.filter(x => x.id != this.group.owner.id);
         },
-        bills() {
-            return this.group.billsByGroupId.nodes;
+        billsByMonth() {
+            let grouped = groupBy(this.group.billsByGroupId.nodes, x => startOfMonth(parse(x.createdAt)));
+            return Object.keys(grouped)
+            .sort((a, b) => a - b)
+            .map(x => ({ month: x, bills: grouped[x] }));
         },
+    },
+    methods: {
+        formatMonthHeading(date) {
+            return format(parse(date), 'MMMM YYYY');
+        },
+        async createNewBill() {
+            try {
+                let result = await this.$apollo.mutate({ mutation: CreateNewBillMutation, variables: { groupId: this.groupId } });
+                let newBillId = result.data.createBill.bill.id;
+                await this.$apollo.queries.group.refetch();
+                // This causes the modal to open on the BillDetail with this id
+                this.recentlyCreatedBillId = newBillId;
+            } catch (err) {
+                console.log(err);
+            }
+        },
+    },
+    mounted() {
+        EventBus.$on('updated-bill', () => this.$apollo.queries.group.refetch());
     },
     apollo: {
         group: {
@@ -66,6 +115,10 @@ export default {
             },
             update: data => data.groupById,
         }
+    },
+    components: {
+        FontAwesomeIcon,
+        BillDetail,
     },
 }
 </script>

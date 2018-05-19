@@ -1,7 +1,7 @@
 <template>
 <div id="root">
 
-<the-navbar v-bind:user="user" v-on:logout="logout"></the-navbar>
+<the-navbar v-on:logout="logout"></the-navbar>
 
 <section class="section" v-if="user == null">
 <div class="container">
@@ -25,8 +25,7 @@
 
     <div class="columns">
         <div class="column is-4">
-            <group-select 
-              v-bind:user="user"
+            <group-select
               v-bind:selectedGroup="group" 
               v-on:select-group="selectGroup"
             >
@@ -34,6 +33,7 @@
         </div>
         <div class="column is-8" v-if="group != null">
             <group-detail
+              v-bind:current-user="user"
               v-bind:groupId="group.id"
             >
             </group-detail>
@@ -51,7 +51,7 @@
 import gql from 'graphql-tag';
 
 import AuthenticateMutation from '../graphql/mutations/Authenticate.gql';
-import UserQuery from '../graphql/queries/User.gql';
+import CurrentPersonQuery from '../graphql/queries/CurrentPerson.gql';
 
 import FontAwesomeIcon from '@fortawesome/vue-fontawesome';
 import { faSpinner } from '@fortawesome/fontawesome-free-solid';
@@ -70,8 +70,8 @@ export default {
     }),
     apollo: {
         user: {
-            query: UserQuery,
-            update: data => data.currentPerson,
+            query: CurrentPersonQuery,
+            update: data => (console.log(data.currentPerson), data.currentPerson),
             error(err) {
                 this.user = null;
             },
@@ -84,7 +84,10 @@ export default {
                 let loginResult = await this.$apollo.mutate({ mutation: AuthenticateMutation, variables: loginInfo });
                 let token = loginResult.data.authenticate.jwtToken;
                 window.localStorage.setItem('token', token);
+                this.$apollo.provider.defaultClient.cache.reset();
+                console.log(this.$apollo.queries.user);
                 this.$apollo.queries.user.refetch();
+                console.log(this.$apollo.queries.user);
             } catch (err) {
                 this.loginProblem = true;
                 this.logout();
@@ -93,7 +96,7 @@ export default {
         logout() {
             window.localStorage.removeItem('token');
             this.$apollo.provider.defaultClient.cache.reset();
-            this.$apollo.queries.user.refresh();
+            this.$apollo.queries.user.refetch();
         },
         selectGroup(group) {
             this.group = group;

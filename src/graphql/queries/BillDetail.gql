@@ -1,0 +1,23 @@
+query BillDetail($billId: Int!) {
+    billById(id: $billId) {
+        id
+        name
+        amount
+        ownerId
+        createdAt
+        participatingUsers {
+            nodes {
+                id
+                bestIdentifier
+                firstName
+            }
+        }
+        paidUsers {
+            nodes {
+                id
+                bestIdentifier
+                firstName
+            }
+        }
+    }
+}

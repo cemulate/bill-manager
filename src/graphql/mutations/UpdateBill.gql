@@ -1,0 +1,7 @@
+mutation UpdateBill($billId: Int!, $patch: BillPatch!) {
+    updateBillById(input: { id: $billId, billPatch: $patch }) {
+        bill {
+            id
+        }
+    }
+}

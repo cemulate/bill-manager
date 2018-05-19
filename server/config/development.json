@@ -1,7 +1,0 @@
-{
-    "postgraphile": {
-        "host": "localhost",
-        "port": 5432,
-        "protocol": "http"
-    }
-}

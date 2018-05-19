@@ -24,12 +24,24 @@
 </template>
 
 <script>
+import CurrentPersonQuery from '../graphql/queries/CurrentPerson.gql';
+
 export default {
     data: () => ({
         displayNavbarMenu: false,
+        user: Object,
     }),
     props: {
-        user: Object,
+        
+    },
+    apollo: {
+        user: {
+            query: CurrentPersonQuery,
+            update: data => data.currentPerson,
+            error(err) {
+                this.user = null;
+            },
+        },
     },
     watch: {
         user(val) {
