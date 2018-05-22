@@ -1,0 +1,5 @@
+mutation UpdateUserBillStatus($userId: Int!, $billId: Int!, $patch: UserBillStatusPatch!) {
+    updateUserBillStatusByUserIdAndBillId(input: { userId: $userId, billId: $billId, userBillStatusPatch: $patch }) {
+        clientMutationId
+    }
+}

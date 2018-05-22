@@ -99,9 +99,15 @@ create policy insert_user_bill_status on bm.user_bill_status for insert with che
         where owner_id = bm.current_user_id()
     )
 );
--- If CU can update their own percent responsible or paid status for a bill
+-- CU can update their own percent responsible or paid status for a bill; bill owner can update everybody's
 create policy update_user_bill_status_percent on bm.user_bill_status for update using (
     user_id = bm.current_user_id()
+    or
+    bm.current_user_id() = (
+        select owner_id
+        from bm.bill
+        where id = bill_id
+    )
 );
 -- If CU removes a user from a bill, they should own that bill
 create policy delete_user_bill_status on bm.user_bill_status for delete using (

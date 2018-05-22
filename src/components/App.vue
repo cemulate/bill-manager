@@ -85,9 +85,7 @@ export default {
                 let token = loginResult.data.authenticate.jwtToken;
                 window.localStorage.setItem('token', token);
                 this.$apollo.provider.defaultClient.cache.reset();
-                console.log(this.$apollo.queries.user);
                 this.$apollo.queries.user.refetch();
-                console.log(this.$apollo.queries.user);
             } catch (err) {
                 this.loginProblem = true;
                 this.logout();

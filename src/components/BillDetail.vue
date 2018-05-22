@@ -15,17 +15,16 @@
     </div>
     <div class="column is-8">
         <div class="buttons">
-            <span class="button"
+            <pay-status-button
               v-for="user in augmentedParticipants"
               v-bind:key="user.id"
-              v-bind:class="{ 'is-success': user.paid, 'is-warning': user.isOwner }"
-              v-bind:disabled="user.id != currentUser.id || user.isOwner"
+              v-bind="user"
+              v-bind:label="user.firstName || user.bestIdentifier"
+              v-bind:editable="canChangePaidStatusForUserOnBill(user, bill)"
+              v-bind:isLoading="currentlyTogglingUserId == user.id"
+              v-on:toggle-paid="toggleUserPaid(user)"
             >
-                <span>{{ user.firstName || user.bestIdentifier }}</span>
-                &nbsp;
-                <font-awesome-icon v-if="user.paid" icon="check"></font-awesome-icon>
-                <span v-if="!user.paid"><strong>${{ user.owes }}</strong></span>
-            </span>
+            </pay-status-button>
         </div>
     </div>
 </div>
@@ -46,20 +45,24 @@
 <script>
 import BillDetailQuery from '../graphql/queries/BillDetail.gql';
 import CurrentPersonQuery from '../graphql/queries/CurrentPerson.gql';
+import UpdateUserBillStatusMutation from '../graphql/mutations/UpdateUserBillStatus.gql';
 
 import FontAwesomeIcon from '@fortawesome/vue-fontawesome';
 import { faCheck, faUserCog } from '@fortawesome/fontawesome-free-solid';
 
+import PayStatusButton from './PayStatusButton.vue';
 import BillEditModal from './BillEditModal.vue';
 
+import UtilMixin from '../mixins/Util.js';
+
 import { format, parse } from 'date-fns';
-import billUtil from '../util/bill.js';
 
 export default {
     data: () => ({
         bill: null,
         participatingUsers: null,
         showEditModal: false,
+        currentlyTogglingUserId: null,
     }),
     props: {
         currentUser: Object,
@@ -69,19 +72,30 @@ export default {
     },
     computed: {
         augmentedParticipants() {
-            return billUtil.augmentedBillParticipants(this.bill);
+            return this.augmentedBillParticipants(this.bill);
         },
         billOwner() {
-            return billUtil.augmentedBillParticipants(this.bill).find(x => x.isOwner);
+            return this.augmentedBillParticipants(this.bill).find(x => x.isOwner);
         },
     },
     methods: {
         dateFormat(date) {
-            console.log(date);
             return format(parse(date), 'MM/DD/YYYY');
         },
         refreshBill() {
             this.$apollo.queries.bill.refetch();
+        },
+        async toggleUserPaid(user) {
+            try {
+                this.currentlyTogglingUserId = user.id;
+                let patch = { paid: !user.paid };
+                let result = await this.$apollo.mutate({ mutation: UpdateUserBillStatusMutation, variables: { userId: user.id, billId: this.billId, patch } });
+                await this.$apollo.queries.bill.refetch();
+            } catch (err) {
+                console.log(err);
+            } finally {
+                this.currentlyTogglingUserId = null;
+            }
         },
     },
     apollo: {
@@ -101,7 +115,9 @@ export default {
     },
     components: {
         FontAwesomeIcon,
+        PayStatusButton,
         BillEditModal,
     },
+    mixins: [UtilMixin],
 }
 </script>

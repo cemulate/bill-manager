@@ -23,23 +23,33 @@
             </form>
             <div class="is-size-4">Bill Members</div>
             <hr>
-            <div class="columns is-vcentered">
-                <div class="column is-5"><strong>Name</strong></div>
-                <div class="column is-3"><strong>Portion</strong></div>
-                <div class="column is-2 has-text-centered"><strong>Paid</strong></div>
-                <div class="column is-2"></div>
-            </div>
-            <div class="columns is-vcentered" v-for="user in augmentedParticipants" v-bind:key="user.id">
-                <div class="column is-5">{{ user.bestIdentifier }}</div>
+            <div class="columns is-vcentered" 
+              v-for="user in augmentedParticipants"
+              v-bind:key="user.id"
+              v-bind:class="{ 'has-background-warning': user.isOwner }"
+            >
+                <div class="column is-4">{{ user.bestIdentifier }}</div>
                 <div class="column is-3">
                     <p class="control has-icons-right">
-                        <input class="input" type="number" min="0" max="100" step="1" v-model="user.percent">
+                        <input class="input" type="number" min="0" max="100" step="1"
+                          v-model.number="user.percent"
+                          v-bind:disabled="currentUser.id != bill.ownerId"
+                        >
                         <span class="icon is-right"><font-awesome-icon icon="percent"></font-awesome-icon></span>
                     </p>
                 </div>
-                <div class="column is-2 has-text-centered">
-                    <span class="is-size-4" v-bind:class="{ 'has-text-success': user.paid, 'has-text-grey-lighter': !user.paid }">
-                        <font-awesome-icon v-if="user.paid" icon="check-square"></font-awesome-icon>
+                <div class="column is-3 has-text-centered">
+                    <span class="is-size-4">
+                        <pay-status-button
+                          class="is-fullwidth"
+                          v-bind="user"
+                          v-bind:owes="moneyOwedFromPercent(bill.amount, user.percent)"
+                          v-bind:label="''"
+                          v-bind:editable="canChangePaidStatusForUserOnBill(user, bill)"
+                          v-bind:displayLabel="false"
+                          v-on:toggle-paid="user.paid = !user.paid"
+                        >
+                        </pay-status-button>
                     </span>
                 </div>
                 <div class="column is-2 has-text-right">
@@ -66,8 +76,9 @@
             </div>
         </section>
         <footer class="modal-card-foot">
-            <button class="button is-success" v-on:click="saveChanges()">Save changes</button>
+            <button class="button is-success" v-on:click="saveChanges()" v-bind:disabled="!percentsAddUp">Save changes</button>
             <button class="button" v-on:click="$emit('close')">Cancel</button>
+            <span class="is-right has-text-danger" v-if="!percentsAddUp">Please ensure that percents add to 100%</span>
         </footer>
     </div>
     <button class="modal-close is-large" v-on:click="$emit('close')"></button>
@@ -76,16 +87,19 @@
 
 <script>
 import cloneDeep from 'lodash/cloneDeep';
+import pick from 'lodash/pick';
 
 import FontAwesomeIcon from '@fortawesome/vue-fontawesome';
 import { faDollarSign, faCheckSquare, faPercent } from '@fortawesome/fontawesome-free-solid';
 
 import { Money } from 'v-money';
+import PayStatusButton from './PayStatusButton.vue';
 
-import billUtil from '../util/bill.js';
+import UtilMixin from '../mixins/Util.js';
 
 import AddUsersToBillMutation from '../graphql/mutations/AddUsersToBill.gql';
 import RemoveUsersFromBillMutation from '../graphql/mutations/RemoveUsersFromBill.gql';
+import UpdateUserBillStatusMutation from '../graphql/mutations/UpdateUserBillStatus.gql';
 import UpdateBillMutation from '../graphql/mutations/UpdateBill.gql';
 
 export default {
@@ -104,15 +118,16 @@ export default {
         nonParticipatingGroupMembers() {
             return this.group.members.nodes.filter(x => !this.augmentedParticipants.some(y => x.id == y.id));
         },
+        percentsAddUp() {
+            return this.augmentedParticipants.reduce((total, cur) => total + cur.percent, 0) == 100;
+        }
     },
     methods: {
         initializeEditData() {
             if (this.bill == null) return;
 
-            let { name, amount } = this.bill;
-            this.editData = { name, amount };
-
-            this.augmentedParticipants = billUtil.augmentedBillParticipants(this.bill);
+            this.editData = pick(this.bill, 'name', 'amount');
+            this.augmentedParticipants = this.augmentedBillParticipants(this.bill);
         },
         removeUserFromBill(user) {
             this.augmentedParticipants = this.augmentedParticipants.filter(x => x.id != user.id);
@@ -120,17 +135,38 @@ export default {
         addSelectedUserToBill() {
             if (this.selectedUserId == 0) return;
             let user = this.group.members.nodes.find(x => x.id == this.selectedUserId);
-            this.augmentedParticipants.push(user);
+            let augmented = { ...user, paid: false, percent: 0 };
+            this.augmentedParticipants = [...this.augmentedParticipants, augmented];
+            console.log(this.augmentedParticipants);
             this.selectedUserId = 0;
         },
         async saveChanges() {
+            console.log(this.augmentedParticipants);
             let addedUserIds = this.augmentedParticipants.filter(x => !this.bill.participatingUsers.nodes.some(y => x.id == y.id)).map(x => x.id);
             let removedUserIds = this.bill.participatingUsers.nodes.filter(x => !this.augmentedParticipants.some(y => x.id == y.id)).map(x => x.id);
             try {
-                let addUsersResult = await this.$apollo.mutate({ mutation: AddUsersToBillMutation, variables: { userIds: addedUserIds, billId: this.bill.id } });
-                let removeUsersResult = await this.$apollo.mutate({ mutation: RemoveUsersFromBillMutation, variables: { userIds: removedUserIds, billId: this.bill.id } });
+                let billInfo = { billId: this.bill.id };
 
-                let updateBillResult = await this.$apollo.mutate({ mutation: UpdateBillMutation, variables: { billId: this.bill.id, patch: this.editData } });
+                let addUsersResult = await this.$apollo.mutate({ mutation: AddUsersToBillMutation, variables: { userIds: addedUserIds, ...billInfo } });
+                let removeUsersResult = await this.$apollo.mutate({ mutation: RemoveUsersFromBillMutation, variables: { userIds: removedUserIds, ...billInfo } });
+
+                let updateBillResult = await this.$apollo.mutate({ mutation: UpdateBillMutation, variables: { ...billInfo, patch: this.editData } });
+
+                let statusUpdates = [];
+                for (let u of this.augmentedParticipants) {
+                    let orig = this.bill.participatingUsers.nodes.find(x => x.id == u.id);
+
+                    let origStatus = orig != null ? orig.userBillStatusByBillId : {};
+                    let patch = ['paid', 'percent'].reduce((obj, prop) => {
+                        console.log(prop, u[prop], origStatus[prop]);
+                        if (u[prop] != origStatus[prop]) return { ...obj, [prop]: u[prop] };
+                        return obj;
+                    }, {});
+                    console.log(u.id, patch);
+                    statusUpdates.push(this.$apollo.mutate({ mutation: UpdateUserBillStatusMutation, variables: { userId: u.id, ...billInfo, patch } }));
+                }
+
+                let statusUpdateResults = await Promise.all(statusUpdates);
 
                 this.$emit('close');
                 this.$emit('updated-bill');
@@ -142,7 +178,9 @@ export default {
     components: {
         FontAwesomeIcon,
         Money,
+        PayStatusButton,
     },
+    mixins: [UtilMixin],
     watch: {
         bill: {
             immediate: true,
