@@ -1,0 +1,5 @@
+mutation RemoveUsersFromBill($userIds: [Int]!, $billId: Int!) {
+    removeUsersFromBill(input: { userIds: $userIds, billId: $billId }) {
+        clientMutationId
+    }
+}

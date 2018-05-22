@@ -14,12 +14,13 @@
     "css-loader": "^0.28.4",
     "extract-text-webpack-plugin": "^4.0.0-alpha.0",
     "node-sass": "^4.5.3",
+    "nodemon": "^1.17.4",
     "sass-loader": "^7.0.1",
     "style-loader": "^0.21.0",
     "url-loader": "^1.0.1",
     "webpack": "^4.4.1",
     "webpack-cli": "^2.0.13",
-    "webpack-dev-server": "^3.1.1"
+    "webpack-hot-middleware": "^2.22.2"
   },
   "dependencies": {
     "@fortawesome/fontawesome": "^1.1.7",
@@ -38,9 +39,9 @@
     "graphql-tag": "^2.8.0",
     "lodash": "^4.17.10",
     "money-math": "^2.5.1",
-    "nodemon": "^1.17.4",
     "pg": "^7.4.3",
     "postgraphile": "^4.0.0-beta.5",
+    "v-money": "^0.8.1",
     "vue": "^2.5.16",
     "vue-apollo": "^3.0.0-beta.5",
     "vue-loader": "^15.0.9",

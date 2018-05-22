@@ -1,0 +1,5 @@
+mutation AddUserToBill($userIds: [Int]!, $billId: Int!) {
+    addUsersToBill(input: { userIds: $userIds, billId: $billId }) {
+        clientMutationId
+    }
+}

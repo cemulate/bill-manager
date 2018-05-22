@@ -1,17 +1,28 @@
 import money from 'money-math';
 
-function augmentedNonOwnerBillParticipants(bill) {
+function augmentedBillParticipants(bill) {
     // Add 'paid' to the bill's users, remove owner
-    return bill.participatingUsers.nodes.map(u => ({
-        ...u,
-        paid: bill.paidUsers.nodes.some(x => x.id == u.id),
-        owes: money.div(bill.amount, money.floatToAmount(bill.participatingUsers.nodes.length)),
-    }))
-    .filter(x => x.id != bill.ownerId);
+    return bill.participatingUsers.nodes.map(u => {
+        let status = u.userBillStatusByBillId || { percent: 0, paid: false };
+        return {
+            originalUser: u,
+            ...u,
+            ...status,
+            owes: money.percent(bill.amount, money.floatToAmount(status.percent)),
+            isOwner: u.id == bill.ownerId,
+        };
+    })
+    .sort((a, b) => a.isOwner ? -1 : 1);
 }
 
 function billOwner(bill) {
-    return bill.participatingUsers.nodes.find(x => x.id == bill.ownerId);
+    let owner = bill.participatingUsers.nodes.find(x => x.id == bill.ownerId);
+    return {
+        ...owner,
+        paid: true,
+        percent: owner.userBillStatusByBillId.percent,
+        owes: money.percent(bill.amount, money.floatToAmount(owner.userBillStatusByBillId.percent)),
+    }
 }
 
-export default { augmentedNonOwnerBillParticipants, billOwner };
+export default { augmentedBillParticipants };

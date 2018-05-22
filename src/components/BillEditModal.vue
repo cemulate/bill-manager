@@ -5,36 +5,45 @@
         <header class="modal-card-head">
             <p class="modal-card-title">Edit Bill</p>
         </header>
-        <section class="modal-card-body" v-if="editBill != null">
+        <section class="modal-card-body" v-if="editData != null">
             <form class="form">
                 <div class="field">
                     <label class="label">Name</label>
                     <div class="control">
-                        <input type="text" class="input" v-model="editBill.name" maxlength="80">
+                        <input type="text" class="input" v-model="editData.name" maxlength="80">
                     </div>
                 </div>
                 <div class="field">
                     <label class="label">Amount</label>
                     <p class="control has-icons-left">
                         <span class="icon is-left"><font-awesome-icon icon="dollar-sign"></font-awesome-icon></span>
-                        <input type="number" class="input" v-model="editBill.amount" pattern="\-?\d+\.\d\d">
+                        <money class="input" v-model="editData.amount" v-bind:masked="true"></money>
                     </p>
                 </div>
             </form>
             <div class="is-size-4">Bill Members</div>
             <hr>
             <div class="columns is-vcentered">
-                <div class="column is-8">{{ billOwner.bestIdentifier }}</div>
-                <div class="column is-2 has-text-centered is-size-3 has-text-grey-lighter"><font-awesome-icon icon="check-square"></font-awesome-icon></div>
+                <div class="column is-5"><strong>Name</strong></div>
+                <div class="column is-3"><strong>Portion</strong></div>
+                <div class="column is-2 has-text-centered"><strong>Paid</strong></div>
+                <div class="column is-2"></div>
             </div>
-            <div class="columns is-vcentered" v-for="user in nonOwnerParticipantsWithPaidStatus" v-bind:key="user.id">
-                <div class="column is-8">{{ user.bestIdentifier }}</div>
-                <div class="column is-2 has-text-centered is-size-4 has-text-success" v-if="user.paid"><font-awesome-icon icon="check-square"></font-awesome-icon></div>
-                <div class="column is-2 has-text-centered" v-else>
-                    <span class="is-text-weight-bold">Owes <strong>${{ user.owes }}</strong></span>
+            <div class="columns is-vcentered" v-for="user in augmentedParticipants" v-bind:key="user.id">
+                <div class="column is-5">{{ user.bestIdentifier }}</div>
+                <div class="column is-3">
+                    <p class="control has-icons-right">
+                        <input class="input" type="number" min="0" max="100" step="1" v-model="user.percent">
+                        <span class="icon is-right"><font-awesome-icon icon="percent"></font-awesome-icon></span>
+                    </p>
                 </div>
-                <div class="column is-narrow is-right" v-if="currentUser.id == editBill.ownerId">
-                    <a class="button is-danger" v-on:click="removeUserFromBill(user)">Remove</a>
+                <div class="column is-2 has-text-centered">
+                    <span class="is-size-4" v-bind:class="{ 'has-text-success': user.paid, 'has-text-grey-lighter': !user.paid }">
+                        <font-awesome-icon v-if="user.paid" icon="check-square"></font-awesome-icon>
+                    </span>
+                </div>
+                <div class="column is-2 has-text-right">
+                    <a class="delete" v-if="currentUser.id == bill.ownerId" v-on:click="removeUserFromBill(user)">Remove</a> 
                 </div>
             </div>
             <div class="columns">
@@ -45,7 +54,7 @@
                             <div class="select is-fullwidth">
                                 <select v-model="selectedUserId">
                                     <option value="0"></option>
-                                    <option v-for="user in nonParticipatingGroupMembers" v-bind:value="user.id">{{ user.bestIdentifier }}</option>
+                                    <option v-for="user in nonParticipatingGroupMembers" v-bind:key="user.id" v-bind:value="user.id">{{ user.bestIdentifier }}</option>
                                 </select>
                             </div>
                         </div>
@@ -66,22 +75,23 @@
 </template>
 
 <script>
-import EventBus from '../util/event-bus.js';
-
 import cloneDeep from 'lodash/cloneDeep';
 
 import FontAwesomeIcon from '@fortawesome/vue-fontawesome';
-import { faDollarSign, faCheckSquare } from '@fortawesome/fontawesome-free-solid';
+import { faDollarSign, faCheckSquare, faPercent } from '@fortawesome/fontawesome-free-solid';
+
+import { Money } from 'v-money';
 
 import billUtil from '../util/bill.js';
 
-import AddUserToBillMutation from '../graphql/mutations/AddUserToBill.gql';
-import RemoveUserFromBillMutation from '../graphql/mutations/RemoveUserFromBill.gql';
+import AddUsersToBillMutation from '../graphql/mutations/AddUsersToBill.gql';
+import RemoveUsersFromBillMutation from '../graphql/mutations/RemoveUsersFromBill.gql';
 import UpdateBillMutation from '../graphql/mutations/UpdateBill.gql';
 
 export default {
     data: () => ({
-        editBill: null,
+        editData: null,
+        augmentedParticipants: null,
         selectedUserId: 0,
     }),
     props: {
@@ -91,45 +101,36 @@ export default {
         show: Boolean,
     },
     computed: {
-        // TODO: Find a way to not duplicate these with BillDetail.vue
-        nonOwnerParticipantsWithPaidStatus() {
-            return billUtil.augmentedNonOwnerBillParticipants(this.editBill);
-        },
-        billOwner() {
-            return billUtil.billOwner(this.editBill);
-        },
         nonParticipatingGroupMembers() {
-            return this.group.members.nodes.filter(x => !this.editBill.participatingUsers.nodes.some(y => x.id == y.id));
+            return this.group.members.nodes.filter(x => !this.augmentedParticipants.some(y => x.id == y.id));
         },
     },
     methods: {
-        initializeEditBill() {
-            console.log(this.bill);
-            this.editBill = cloneDeep(this.bill);
+        initializeEditData() {
+            if (this.bill == null) return;
+
+            let { name, amount } = this.bill;
+            this.editData = { name, amount };
+
+            this.augmentedParticipants = billUtil.augmentedBillParticipants(this.bill);
         },
         removeUserFromBill(user) {
-            this.editBill.participatingUsers.nodes = this.editBill.participatingUsers.nodes.filter(x => x.id != user.id);
+            this.augmentedParticipants = this.augmentedParticipants.filter(x => x.id != user.id);
         },
         addSelectedUserToBill() {
             if (this.selectedUserId == 0) return;
             let user = this.group.members.nodes.find(x => x.id == this.selectedUserId);
-            console.log(user);
-            this.editBill.participatingUsers.nodes.push(user);
+            this.augmentedParticipants.push(user);
             this.selectedUserId = 0;
         },
         async saveChanges() {
-            let addedUsers = this.editBill.participatingUsers.nodes.filter(x => !this.bill.participatingUsers.nodes.some(y => x.id == y.id));
-            let removedUsers = this.bill.participatingUsers.nodes.filter(x => !this.editBill.participatingUsers.nodes.some(y => x.id == y.id));
+            let addedUserIds = this.augmentedParticipants.filter(x => !this.bill.participatingUsers.nodes.some(y => x.id == y.id)).map(x => x.id);
+            let removedUserIds = this.bill.participatingUsers.nodes.filter(x => !this.augmentedParticipants.some(y => x.id == y.id)).map(x => x.id);
             try {
-                let addUserResults = await Promise.all(addedUsers.map(u => {
-                    return this.$apollo.mutate({ mutation: AddUserToBillMutation, variables: { userId: u.id, billId: this.bill.id } });
-                }));
-                let removeUserResults = await Promise.all(removedUsers.map(u => {
-                    return this.$apollo.mutate({ mutation: RemoveUserFromBillMutation, variables: { userId: u.id, billId: this.bill.id } });
-                }));
-                let { name, amount } = this.editBill;
-                let patch = { name, amount };
-                let billResults = await this.$apollo.mutate({ mutation: UpdateBillMutation, variables: { billId: this.bill.id, patch } });
+                let addUsersResult = await this.$apollo.mutate({ mutation: AddUsersToBillMutation, variables: { userIds: addedUserIds, billId: this.bill.id } });
+                let removeUsersResult = await this.$apollo.mutate({ mutation: RemoveUsersFromBillMutation, variables: { userIds: removedUserIds, billId: this.bill.id } });
+
+                let updateBillResult = await this.$apollo.mutate({ mutation: UpdateBillMutation, variables: { billId: this.bill.id, patch: this.editData } });
 
                 this.$emit('close');
                 this.$emit('updated-bill');
@@ -140,18 +141,19 @@ export default {
     },
     components: {
         FontAwesomeIcon,
+        Money,
     },
     watch: {
         bill: {
             immediate: true,
             handler(val) {
-                this.initializeEditBill()
+                this.initializeEditData()
             },
         },
         show: {
             immediate: true,
             handler(val) {
-                this.initializeEditBill()
+                this.initializeEditData()
             },
         },
     },

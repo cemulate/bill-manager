@@ -54,8 +54,6 @@
 </template>
 
 <script>
-import EventBus from '../util/event-bus.js';
-
 import BillDetail from './BillDetail.vue';
 
 import GroupDetailQuery from '../graphql/queries/GroupDetail.gql';
@@ -103,9 +101,6 @@ export default {
                 console.log(err);
             }
         },
-    },
-    mounted() {
-        EventBus.$on('updated-bill', () => this.$apollo.queries.group.refetch());
     },
     apollo: {
         group: {

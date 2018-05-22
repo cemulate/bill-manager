@@ -5,10 +5,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 module.exports = {
-  devServer: {
-    contentBase: path.resolve(__dirname, './src'),
-    disableHostCheck: true
-  },
+  entry: process.env.NODE_ENV == 'development' ? ['webpack-hot-middleware/client', './src/index.js'] : './src/index.js',
   module: {
     rules: [
       {
@@ -47,5 +44,6 @@ module.exports = {
       { from: './src/index.html', to: './index.html' }
     ]),
     new VueLoaderPlugin(),
+    new webpack.HotModuleReplacementPlugin(),
   ]
 };

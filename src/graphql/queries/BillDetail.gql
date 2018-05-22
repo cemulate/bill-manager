@@ -10,13 +10,10 @@ query BillDetail($billId: Int!) {
                 id
                 bestIdentifier
                 firstName
-            }
-        }
-        paidUsers {
-            nodes {
-                id
-                bestIdentifier
-                firstName
+                userBillStatusByBillId(billId: $billId) {
+                    percent
+                    paid
+                }
             }
         }
     }

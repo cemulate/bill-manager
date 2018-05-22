@@ -15,16 +15,11 @@
     </div>
     <div class="column is-8">
         <div class="buttons">
-            <span class="button is-warning" disabled>
-                <span>{{ billOwner.firstName || billOwner.bestIdentifier }}</span>
-                &nbsp;
-                <font-awesome-icon icon="check"></font-awesome-icon>
-            </span>
             <span class="button"
-              v-for="user in augmentedNonOwnerBillParticipants"
+              v-for="user in augmentedParticipants"
               v-bind:key="user.id"
-              v-bind:class="{ 'is-success': user.paid }"
-              v-bind:disabled="user.id != currentUser.id"
+              v-bind:class="{ 'is-success': user.paid, 'is-warning': user.isOwner }"
+              v-bind:disabled="user.id != currentUser.id || user.isOwner"
             >
                 <span>{{ user.firstName || user.bestIdentifier }}</span>
                 &nbsp;
@@ -73,11 +68,11 @@ export default {
         openModal: Boolean,
     },
     computed: {
-        augmentedNonOwnerBillParticipants() {
-            return billUtil.augmentedNonOwnerBillParticipants(this.bill);
+        augmentedParticipants() {
+            return billUtil.augmentedBillParticipants(this.bill);
         },
         billOwner() {
-            return billUtil.billOwner(this.bill);
+            return billUtil.augmentedBillParticipants(this.bill).find(x => x.isOwner);
         },
     },
     methods: {

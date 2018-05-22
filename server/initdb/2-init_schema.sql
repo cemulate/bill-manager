@@ -32,8 +32,8 @@ $$ language sql stable;
 create function bm.create_group(name text) returns bm.group as $$
 declare newgroup bm.group;
 begin
-    insert into bm.group ("name", "owner_id") values (name, current_setting('jwt.claims.user_id')::integer) returning bm.group.* into newgroup;
-    insert into bm.user_group (user_id, group_id) values (current_setting('jwt.claims.user_id')::integer, newgroup.id);
+    insert into bm.group ("name", "owner_id") values (name, bm.current_user_id()) returning bm.group.* into newgroup;
+    insert into bm.user_group (user_id, group_id) values (bm.current_user_id(), newgroup.id);
     return newgroup;
 end;
 $$ language plpgsql;
@@ -45,7 +45,7 @@ create table bm.user_group (
     primary key (user_id, group_id)
 );
 
--- Don't generate any GraphQL schema for pivot tables
+-- Pure pivot table; don't generate any GraphQL schema
 comment on table bm.user_group is E'@omit';
 
 create function bm.user_participating_groups(u bm.user) returns setof bm.group as $$
@@ -71,42 +71,55 @@ comment on table bm.bill is E'@omit create';
 create function bm.create_bill(name text, amount text, group_id integer) returns bm.bill as $$
 declare newbill bm.bill;
 begin
-    insert into bm.bill ("name", "amount", "group_id", "owner_id") values (name, amount, group_id, current_setting('jwt.claims.user_id')::integer) returning bm.bill.* into newbill;
-    insert into bm.user_bill (user_id, bill_id) values (current_setting('jwt.claims.user_id')::integer, newbill.id);
+    insert into bm.bill ("name", "amount", "group_id", "owner_id") values (name, amount, group_id, bm.current_user_id()) returning bm.bill.* into newbill;
+    insert into bm.user_bill_status (user_id, bill_id, paid) values (bm.current_user_id(), newbill.id, true);
     return newbill;
 end;
 $$ language plpgsql;
 
--- Bill membership
-create table bm.user_bill (
+-- User-bill status (percent responsible; paid status)
+create table bm.user_bill_status (
     user_id integer not null references bm.user (id),
     bill_id integer not null references bm.bill (id),
+    percent integer not null default 0 check (percent >= 0 and percent <= 100),
     paid boolean not null default false,
     primary key (user_id, bill_id)
 );
 
--- Don't generate any GraphQL schema for pivot tables
-comment on table bm.user_bill is E'@omit';
+-- Omit most of the schema, allow update
+comment on table bm.user_bill_status is E'@omit create,delete,all';
 
 create function bm.bill_participating_users(b bm.bill) returns setof bm.user as $$
-    select bm.user.* from bm.user inner join bm.user_bill on (bm.user.id = bm.user_bill.user_id) where (bm.user_bill.bill_id = b.id);
+    select bm.user.* from bm.user inner join bm.user_bill_status on (bm.user.id = bm.user_bill_status.user_id) where (bm.user_bill_status.bill_id = b.id);
 $$ language sql stable;
 
 create function bm.bill_paid_users(b bm.bill) returns setof bm.user as $$
-    select bm.user.* from bm.user inner join bm.user_bill on (bm.user.id = bm.user_bill.user_id) where (bm.user_bill.bill_id = b.id and bm.user_bill.paid = true);
+    select bm.user.* from bm.user inner join bm.user_bill_status on (bm.user.id = bm.user_bill_status.user_id) where (bm.user_bill_status.bill_id = b.id and bm.user_bill_status.paid = true);
 $$ language sql stable;
 
-create function bm.add_user_to_bill(user_id integer, bill_id integer) returns void as $$
-    insert into bm.user_bill (user_id, bill_id, paid) values ($1, $2, false);
-$$ language sql;
+create function bm.add_users_to_bill(user_ids integer[], bill_id integer) returns void as $$
+declare i integer;
+begin
+    foreach i in array user_ids
+    loop
+        insert into bm.user_bill_status (user_id, bill_id) values (i, $2);
+    end loop;
+end;
+$$ language plpgsql;
 
-create function bm.remove_user_from_bill(user_id integer, bill_id integer) returns void as $$
-    delete from bm.user_bill where (user_id = $1 and bill_id = $2);
-$$ language sql;
+create function bm.remove_users_from_bill(user_ids integer[], bill_id integer) returns void as $$
+declare i integer;
+begin
+    foreach i in array user_ids
+    loop
+        delete from bm.user_bill_status where (bm.user_bill_status.user_id = i and bm.user_bill_status.bill_id = $2);
+    end loop;
+end;
+$$ language plpgsql;
 
-create function bm.update_user_paid_status_on_bill(user_id integer, bill_id integer, paid boolean) returns void as $$
-    update bm.user_bill set paid = $3 where (user_id = $1 and bill_id = $2);
-$$ language sql;
+create function bm.user_user_bill_status_by_bill_id(u bm.user, bill_id integer) returns bm.user_bill_status as $$
+    select * from bm.user_bill_status where (user_id = u.id and bill_id = $2);
+$$ language sql stable;
 
 ----------------------------------------------------
 
@@ -151,5 +164,5 @@ end;
 $$ language plpgsql stable;
 
 create function bm.current_person() returns bm.user as $$
-    select * from bm.user where bm.user.id = current_setting('jwt.claims.user_id')::integer
+    select * from bm.user where bm.user.id = bm.current_user_id()
 $$ language sql stable;

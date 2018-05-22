@@ -10,7 +10,7 @@ grant execute on function bm.authenticate(text, text) to bm_anonymous;
 
 -- In the following comments, CU stands for current user
 
-grant select, update, delete on table bm.user to bm_user;
+grant select, update(first_name, last_name), delete on table bm.user to bm_user;
 -- This table should not have rows inserted (use register_user)
 alter table bm.user enable row level security;
 -- CU should only see themselves and users that are in some group that CU is a member of
@@ -86,21 +86,25 @@ create policy delete_user_group on bm.user_group for delete using (
     )
 );
 
-grant select, insert, delete on table bm.user_bill to bm_user;
--- This table should not have rows updated
-alter table bm.user_bill enable row level security;
--- No policy on pivot table select (this table is omitted from the exposed api)
-create policy select_user_bill on bm.user_bill for select using (true);
+grant all on table bm.user_bill_status to bm_user;
+grant update(percent, paid) on table bm.user_bill_status to bm_user;
+alter table bm.user_bill_status enable row level security;
+-- No policy on select
+create policy select_user_bill_status on bm.user_bill_status for select using (true);
 -- If CU adds a user to a bill, they should own that bill
-create policy insert_user_bill on bm.user_bill for insert with check (
+create policy insert_user_bill_status on bm.user_bill_status for insert with check (
     bill_id in (
         select id
         from bm.bill
         where owner_id = bm.current_user_id()
     )
 );
+-- If CU can update their own percent responsible or paid status for a bill
+create policy update_user_bill_status_percent on bm.user_bill_status for update using (
+    user_id = bm.current_user_id()
+);
 -- If CU removes a user from a bill, they should own that bill
-create policy delete_user_bill on bm.user_bill for delete using (
+create policy delete_user_bill_status on bm.user_bill_status for delete using (
     bill_id in (
         select id
         from bm.bill
