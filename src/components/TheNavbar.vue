@@ -8,12 +8,12 @@
                 <span aria-hidden="true"></span>
             </a>
         </div>
-        <div class="navbar-menu" v-bind:class="{'is-active': displayNavbarMenu && user != null}" v-if="user != null">
+        <div class="navbar-menu" v-bind:class="{'is-active': displayNavbarMenu }" v-if="currentUser != null">
             <div class="navbar-start">
             </div>
             <div class="navbar-end">
                 <div class="navbar-item has-dropdown is-hoverable">
-                    <a class="navbar-link">{{ user.firstName }}</a>
+                    <a class="navbar-link">{{ currentUser.firstName }}</a>
                     <div class="navbar-dropdown">
                         <a class="navbar-item" v-on:click="$emit('logout')">Logout</a>
                     </div>
@@ -29,22 +29,12 @@ import CurrentPersonQuery from '../graphql/queries/CurrentPerson.gql';
 export default {
     data: () => ({
         displayNavbarMenu: false,
-        user: Object,
     }),
     props: {
-        
-    },
-    apollo: {
-        user: {
-            query: CurrentPersonQuery,
-            update: data => data.currentPerson,
-            error(err) {
-                this.user = null;
-            },
-        },
+        currentUser: Object,
     },
     watch: {
-        user(val) {
+        currentUser(val) {
             // Unexapand menu upon log(in|out)
             this.displayNavbarMenu = false;
         }

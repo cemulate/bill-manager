@@ -1,7 +1,7 @@
 <template>
 <div id="root">
 
-<the-navbar v-on:logout="logout"></the-navbar>
+<the-navbar v-bind:current-user="user" v-on:logout="logout"></the-navbar>
 
 <section class="section" v-if="user == null">
 <div class="container">
@@ -64,6 +64,7 @@ import GroupDetail from './GroupDetail.vue';
 export default {
     data: () => ({
         user: null,
+        sessionExists: false,
         loginProblem: false,
 
         group: null,
@@ -71,10 +72,12 @@ export default {
     apollo: {
         user: {
             query: CurrentPersonQuery,
-            update: data => (console.log(data.currentPerson), data.currentPerson),
+            update: data => data.currentPerson,
             error(err) {
+                console.log(err);
                 this.user = null;
             },
+            skip: () => window.localStorage.getItem('token') == null,
         },
     },
     methods: {
@@ -84,17 +87,15 @@ export default {
                 let loginResult = await this.$apollo.mutate({ mutation: AuthenticateMutation, variables: loginInfo });
                 let token = loginResult.data.authenticate.jwtToken;
                 window.localStorage.setItem('token', token);
-                this.$apollo.provider.defaultClient.cache.reset();
-                this.$apollo.queries.user.refetch();
+                this.$apollo.queries.user.skip = false;
             } catch (err) {
                 this.loginProblem = true;
                 this.logout();
             }
         },
         logout() {
+            this.user = null;
             window.localStorage.removeItem('token');
-            this.$apollo.provider.defaultClient.cache.reset();
-            this.$apollo.queries.user.refetch();
         },
         selectGroup(group) {
             this.group = group;
