@@ -65,26 +65,6 @@ create policy update_bill on bm.bill for update using (owner_id = bm.current_use
 create policy delete_bill on bm.bill for delete using (owner_id = bm.current_user_id());
 
 grant select, insert, delete on table bm.user_group to bm_user;
--- This table should not have rows updated
-alter table bm.user_group enable row level security;
--- No policy on pivot table select (this table is omitted from the exposed api)
-create policy select_user_group on bm.user_group for select using (true);
--- If CU adds a user to a group, they should own that group
-create policy insert_user_group on bm.user_group for insert with check (
-    group_id in (
-        select id
-        from bm.group
-        where owner_id = bm.current_user_id()
-    )
-);
--- If CU removes a user from a group, they should own that group
-create policy delete_user_group on bm.user_group for delete using (
-    group_id in (
-        select id
-        from bm.group
-        where owner_id = bm.current_user_id()
-    )
-);
 
 grant all on table bm.user_bill_status to bm_user;
 grant update(percent, paid) on table bm.user_bill_status to bm_user;
@@ -117,3 +97,5 @@ create policy delete_user_bill_status on bm.user_bill_status for delete using (
         where owner_id = bm.current_user_id()
     )
 );
+
+grant select, insert on table bm.invitation to bm_user;

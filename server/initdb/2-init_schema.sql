@@ -127,15 +127,6 @@ create table bm_private.user_account (
     phash text not null
 );
 
-create function bm.register_user(first_name text, last_name text, email text, password text) returns bm.user as $$
-declare newuser bm.user;
-begin
-    insert into bm.user (first_name, last_name) values (first_name, last_name) returning * into newuser;
-    insert into bm_private.user_account (user_id, email, phash) values (newuser.id, email, crypt(password, gen_salt('bf')));
-    return newuser;
-end;
-$$  language plpgsql strict security definer;
-
 create type bm.jwt_token as (
     role text,
     user_id integer
@@ -162,3 +153,47 @@ $$ language plpgsql stable;
 create function bm.current_person() returns bm.user as $$
     select * from bm.user where bm.user.id = bm.current_user_id()
 $$ language sql stable;
+
+create function bm.register_user(first_name text, last_name text, email text, password text) returns bm.user as $$
+declare newuser bm.user;
+begin
+    insert into bm.user (first_name, last_name) values (first_name, last_name) returning * into newuser;
+    insert into bm_private.user_account (user_id, email, phash) values (newuser.id, email, crypt(password, gen_salt('bf')));
+    return newuser;
+end;
+$$  language plpgsql strict security definer;
+
+create table bm.invitation (
+    id serial primary key,
+    uuid text not null,
+    group_id integer not null references bm.group (id) on delete cascade,
+    created_at timestamp with time zone default now()
+);
+
+comment on table bm.invitation is E'@omit';
+
+create function bm.make_invite_code_for_group(group_id integer) returns text as $$
+declare code text;
+begin
+    insert into bm.invitation (uuid, group_id) values (gen_random_uuid(), $1) returning uuid into code;
+    return code;
+end;
+$$ language plpgsql;
+
+comment on function bm.make_invite_code_for_group(integer) is E'@resultFieldName code';
+
+create function bm.redeem_invite_code_for_group(code text) returns void as $$
+declare invite bm.invitation;
+declare time_since_invite interval;
+begin
+    select * into invite from bm.invitation where (uuid = code);
+    if not found then
+        raise exception 'No such invitation';
+    end if;
+    select into time_since_invite age(now(), invite.created_at);
+    if (time_since_invite > interval '1 hour') then
+        raise exception 'Invite has expired';
+    end if;
+    insert into bm.user_group (user_id, group_id) values (bm.current_user_id(), invite.group_id);
+end;
+$$ language plpgsql;
