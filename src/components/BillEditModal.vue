@@ -23,7 +23,7 @@
             </form>
             <div class="is-size-4">Bill Members</div>
             <hr>
-            <div class="columns is-vcentered" 
+            <div class="columns is-vcentered"
               v-for="user in augmentedParticipants"
               v-bind:key="user.id"
               v-bind:class="{ 'has-background-warning': user.isOwner }"
@@ -53,7 +53,7 @@
                     </span>
                 </div>
                 <div class="column is-2 has-text-right">
-                    <a class="delete" v-if="currentUser.id == bill.ownerId" v-on:click="removeUserFromBill(user)">Remove</a> 
+                    <a class="delete" v-if="currentUser.id == bill.ownerId" v-on:click="removeUserFromBill(user)">Remove</a>
                 </div>
             </div>
             <div class="columns">

@@ -1,14 +1,14 @@
 <template>
     <span class="button"
-        v-bind:class="{ 'is-success': paid, 'is-warning': isOwner, 'is-loading': isLoading }"
-        v-bind:disabled="!editable"
-        v-on:click="$emit('toggle-paid')"
+      v-bind:class="{ 'is-success': paid && !isOwner, 'is-warning': isOwner, 'is-loading': isLoading }"
+      v-bind:disabled="!editable"
+      v-on:click="$emit('toggle-paid')"
     >
         <span v-if="displayLabel">{{ label }}</span>
         <strong v-if="!displayLabel">${{ owes }}</strong>
 
         <span v-if="shouldHaveSpace">&nbsp;</span>
-        
+
         <font-awesome-icon v-if="paid" icon="check"></font-awesome-icon>
         <span v-if="displayLabel && !paid"><strong>${{ owes }}</strong></span>
     </span>
@@ -27,8 +27,8 @@ export default {
         editable: Boolean,
         isLoading: Boolean,
         displayLabel: {
-            type: true,
-            default: false,
+            type: Boolean,
+            default: true,
         }
     },
     computed: {
@@ -43,11 +43,5 @@ export default {
     components: {
         FontAwesomeIcon,
     },
-    watch: {
-        owes(val) {
-            console.log(val);
-        }
-    }
 };
 </script>
-
