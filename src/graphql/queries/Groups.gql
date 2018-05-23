@@ -5,7 +5,7 @@ query Groups {
             nodes {
                 id
                 name
-                owner {
+                userByOwnerId {
                     id
                     bestIdentifier
                 }

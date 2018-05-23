@@ -3,25 +3,12 @@
 
     <div class="tabs">
         <ul>
-            <li v-bind:class="{ 'is-active': selectedTab == 0 }" v-on:click="selectedTab = 0"><a>Members</a></li>
-            <li v-bind:class="{ 'is-active': selectedTab == 1 }" v-on:click="selectedTab = 1"><a>Bills</a></li>
+            <li v-bind:class="{ 'is-active': selectedTab == 0 }" v-on:click="selectedTab = 0"><a>Bills</a></li>
+            <li v-bind:class="{ 'is-active': selectedTab == 1 }" v-on:click="selectedTab = 1"><a>Members</a></li>
         </ul>
     </div>
 
     <div v-if="group != null && selectedTab == 0">
-        <div class="columns">
-            <div class="column">
-                <strong>{{ group.owner.bestIdentifier }}</strong>
-            </div>
-        </div>
-        <div class="columns" v-for="member in nonOwnerMembers" v-bind:key="member.id">
-            <div class="column">
-                {{ member.bestIdentifier }}
-            </div>
-        </div>
-    </div>
-
-    <div v-if="group != null && selectedTab == 1">
         <nav class="level">
             <div class="level-left">
                 <div class="level-item">
@@ -50,6 +37,19 @@
         </section>
     </div>
 
+    <div v-if="group != null && selectedTab == 1">
+        <div class="columns">
+            <div class="column">
+                <strong>{{ group.userByOwnerId.bestIdentifier }}</strong>
+            </div>
+        </div>
+        <div class="columns" v-for="member in nonOwnerMembers" v-bind:key="member.id">
+            <div class="column">
+                {{ member.bestIdentifier }}
+            </div>
+        </div>
+    </div>
+
 </div>
 </template>
 
@@ -68,7 +68,7 @@ import { parse, format, startOfMonth } from 'date-fns';
 export default {
     data: () => ({
         group: null,
-        selectedTab: 1,
+        selectedTab: 0,
         recentlyCreatedBillId: null,
     }),
     props: {
@@ -77,7 +77,7 @@ export default {
     },
     computed: {
         nonOwnerMembers() {
-            return this.group.members.nodes.filter(x => x.id != this.group.owner.id);
+            return this.group.members.nodes.filter(x => x.id != this.group.userByOwnerId.id);
         },
         billsByMonth() {
             let grouped = groupBy(this.group.billsByGroupId.nodes, x => startOfMonth(parse(x.createdAt)));

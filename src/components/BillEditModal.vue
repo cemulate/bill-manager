@@ -1,11 +1,11 @@
 <template>
 <div class="modal" v-bind:class="{ 'is-active': show }">
     <div class="modal-background" v-on:click="$emit('close')"></div>
-    <div class="modal-card">
+    <div class="modal-card" v-if="editData != null && this.augmentedParticipants != null">
         <header class="modal-card-head">
             <p class="modal-card-title">Edit Bill</p>
         </header>
-        <section class="modal-card-body" v-if="editData != null">
+        <section class="modal-card-body">
             <form class="form">
                 <div class="field">
                     <label class="label">Name</label>

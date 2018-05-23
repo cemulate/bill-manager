@@ -1,7 +1,7 @@
 query GroupDetail($groupId: Int!) {
     groupById(id: $groupId) {
         id
-        owner {
+        userByOwnerId {
             id
             bestIdentifier
         }

@@ -25,10 +25,6 @@ create table bm.group (
 -- Don't generate create mutation (custom)
 comment on table bm.group is E'@omit create';
 
-create function bm.group_owner(g bm.group) returns bm.user as $$
-    select bm.user.* from bm.user inner join bm.group on (bm.user.id = bm.group.owner_id) where bm.group.owner_id = g.id;
-$$ language sql stable;
-
 create function bm.create_group(name text) returns bm.group as $$
 declare newgroup bm.group;
 begin
