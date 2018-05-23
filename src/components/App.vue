@@ -3,16 +3,11 @@
 
 <the-navbar v-bind:current-user="user" v-on:logout="logout"></the-navbar>
 
-<section class="section" v-if="user == null">
+<section class="section" v-if="user == null && !attemptingToRestoreSession">
 <div class="container">
 
     <div class="columns is-centered">
-        <div class="column is-4" v-if="$apollo.queries.user.loading">
-            <p class="has-text-centered">
-                <font-awesome-icon icon="spinner"></font-awesome-icon>
-            </p>
-        </div>
-        <div class="column is-4" v-else>
+        <div class="column is-4">
             <login-box v-bind:problem="loginProblem" v-on:login="login"></login-box>
         </div>
     </div>
@@ -64,22 +59,11 @@ import GroupDetail from './GroupDetail.vue';
 export default {
     data: () => ({
         user: null,
-        sessionExists: false,
+        attemptingToRestoreSession: true,
         loginProblem: false,
 
         group: null,
     }),
-    apollo: {
-        user: {
-            query: CurrentPersonQuery,
-            update: data => data.currentPerson,
-            error(err) {
-                console.log(err);
-                this.user = null;
-            },
-            skip: () => window.localStorage.getItem('token') == null,
-        },
-    },
     methods: {
         async login(loginInfo) {
             this.loginProblem = false;
@@ -87,19 +71,38 @@ export default {
                 let loginResult = await this.$apollo.mutate({ mutation: AuthenticateMutation, variables: loginInfo });
                 let token = loginResult.data.authenticate.jwtToken;
                 window.localStorage.setItem('token', token);
-                this.$apollo.queries.user.skip = false;
+                await this.fetchUser();
             } catch (err) {
+                console.error(err);
                 this.loginProblem = true;
-                this.logout();
             }
         },
+        async fetchUser() {
+            // This would normally be a smart query on the apollo object, but there
+            // are too many problems using that approach when dealing with authentication
+            let userResult = await this.$apollo.query({ query: CurrentPersonQuery });
+            this.user = userResult.data.currentPerson;
+        },
         logout() {
-            this.user = null;
             window.localStorage.removeItem('token');
+            this.user = null;
+            this.$apollo.provider.defaultClient.resetStore();
         },
         selectGroup(group) {
             this.group = group;
         },
+    },
+    async created() {
+        // If a session exists
+        if (window.localStorage.getItem('token') != null) {
+            try {
+                // It might still be good
+                await this.fetchUser();
+            } catch (err) {
+            }
+        }
+        // We made an attempt
+        this.attemptingToRestoreSession = false;
     },
     components: {
         FontAwesomeIcon,
