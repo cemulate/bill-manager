@@ -21,7 +21,7 @@ export default {
             if (user.id == bill.ownerId) return false;
             let isCurrent = this.currentUser.id == user.id;
             let isOwner = this.currentUser.id == this.bill.ownerId;
-            return (isCurrent && !isOwner || !isCurrent || isOwner);
+            return (isCurrent && !isOwner) || (!isCurrent && isOwner);
         },
 
         moneyOwedFromPercent(total, percent) {
