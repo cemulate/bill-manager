@@ -1,11 +1,11 @@
 <template>
     <nav class="panel">
         <p class="panel-heading">Groups</p>
-        <a class="panel-block" 
-          v-for="group in groups" 
-          v-bind:key="group.id" 
+        <a class="panel-block"
+          v-for="group in groups"
+          v-bind:key="group.id"
           v-bind:class="{ 'is-active': isGroupSelected(group) }"
-          v-on:click="$emit('select-group', group)"
+          v-on:click="$emit('select-group', group.id)"
         >
             <span class="panel-icon"><font-awesome-icon icon="users"></font-awesome-icon></span>
             <span v-bind:class="{ 'has-text-weight-bold': isGroupSelected(group) }">{{ group.name }}</span>
@@ -37,11 +37,11 @@ export default {
         newGroupName: '',
     }),
     props: {
-        selectedGroup: Object,
+        selectedGroupId: Number,
     },
     methods: {
         isGroupSelected(group) {
-            return this.selectedGroup != null && group.id == this.selectedGroup.id;
+            return this.selectedGroupId != null && group.id == this.selectedGroupId;
         },
         async createNewGroup() {
             if (this.newGroupName.length == 0) return;
@@ -49,7 +49,7 @@ export default {
                 let result = await this.$apollo.mutate({ mutation: CreateNewGroupMutation, variables: { name: this.newGroupName } });
                 let newGroupId = result.data.createGroup.group.id;
                 await this.$apollo.queries.groups.refetch();
-                this.$emit('select-group', this.groups.find(x => x.id == newGroupId));
+                this.$emit('select-group', newGroupId);
             } catch (err) {
                 console.log(err);
             }
@@ -69,4 +69,3 @@ export default {
     },
 }
 </script>
-

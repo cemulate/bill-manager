@@ -21,15 +21,16 @@
     <div class="columns">
         <div class="column is-4">
             <group-select
-              v-bind:selectedGroup="group" 
+              v-bind:selected-group-id="selectedGroupId"
               v-on:select-group="selectGroup"
             >
             </group-select>
         </div>
-        <div class="column is-8" v-if="group != null">
+        <div class="column is-8">
             <group-detail
+              v-if="selectedGroupId != null"
               v-bind:current-user="user"
-              v-bind:groupId="group.id"
+              v-bind:groupId="selectedGroupId"
             >
             </group-detail>
             <template v-if="selectedGroupId == null">
@@ -73,12 +74,13 @@ export default {
         attemptingToRestoreSession: true,
         loginProblem: false,
 
-        group: null,
+        selectedGroupId: null,
     }),
     methods: {
         async login(loginInfo) {
             this.loginProblem = false;
             try {
+                window.localStorage.removeItem('token');
                 let loginResult = await this.$apollo.mutate({ mutation: AuthenticateMutation, variables: loginInfo });
                 let token = loginResult.data.authenticate.jwtToken;
                 window.localStorage.setItem('token', token);
@@ -97,10 +99,11 @@ export default {
         logout() {
             window.localStorage.removeItem('token');
             this.user = null;
-            this.$apollo.provider.defaultClient.resetStore();
+            this.groupId = null;
+            this.$apollo.provider.defaultClient.cache.reset();
         },
-        selectGroup(group) {
-            this.group = group;
+        selectGroup(groupId) {
+            this.selectedGroupId = groupId;
         },
     },
     async created() {
