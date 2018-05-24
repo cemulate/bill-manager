@@ -1,0 +1,7 @@
+mutation RedeemGroupInvite($code: String!) {
+    redeemInviteCodeForGroup(input: { code: $code }) {
+        group {
+            id
+        }
+    }
+}

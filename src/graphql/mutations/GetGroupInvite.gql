@@ -1,0 +1,5 @@
+mutation GetGroupInvite($groupId: Int!) {
+    makeInviteCodeForGroup(input: { groupId: $groupId }) {
+        code
+    }
+}
