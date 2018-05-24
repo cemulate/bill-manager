@@ -98,4 +98,4 @@ create policy delete_user_bill_status on bm.user_bill_status for delete using (
     )
 );
 
-grant select, insert on table bm.invitation to bm_user;
+grant select, insert, delete on table bm.invitation to bm_user;

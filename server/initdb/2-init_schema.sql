@@ -182,9 +182,10 @@ $$ language plpgsql;
 
 comment on function bm.make_invite_code_for_group(integer) is E'@resultFieldName code';
 
-create function bm.redeem_invite_code_for_group(code text) returns void as $$
+create function bm.redeem_invite_code_for_group(code text) returns bm.group as $$
 declare invite bm.invitation;
 declare time_since_invite interval;
+declare return_group bm.group;
 begin
     select * into invite from bm.invitation where (uuid = code);
     if not found then
@@ -192,8 +193,12 @@ begin
     end if;
     select into time_since_invite age(now(), invite.created_at);
     if (time_since_invite > interval '1 hour') then
+        delete from bm.invitation where (id = invite.id);
         raise exception 'Invite has expired';
     end if;
     insert into bm.user_group (user_id, group_id) values (bm.current_user_id(), invite.group_id);
+    select * into return_group from bm.group where (id = invite.group_id);
+    delete from bm.invitation where (id = invite.id);
+    return return_group;
 end;
 $$ language plpgsql;
