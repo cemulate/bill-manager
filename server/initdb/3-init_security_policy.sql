@@ -15,12 +15,12 @@ grant select, update(first_name, last_name), delete on table bm.user to bm_user;
 alter table bm.user enable row level security;
 -- CU should only see themselves and users that are in some group that CU is a member of
 create policy select_user on bm.user for select using (
-    id = bm.current_user_id() 
-    or 
+    id = bm.current_user_id()
+    or
     id in (
         select t2.user_id
-        from bm.user_group as t1 
-        join bm.user_group as t2 on (t1.group_id = t2.group_id) 
+        from bm.user_group as t1
+        join bm.user_group as t2 on (t1.group_id = t2.group_id)
         where t1.user_id = bm.current_user_id()
     )
 );

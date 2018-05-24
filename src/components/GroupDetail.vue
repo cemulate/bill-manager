@@ -17,18 +17,18 @@
             </div>
             <div class="level-right">
                 <div class="level-item">
-                    
+
                 </div>
             </div>
         </nav>
         <section v-for="{ month, bills } in billsByMonth" v-bind:key="month">
             <span class="is-size-4">{{ formatMonthHeading(month) }}</span>
             <hr>
-            <bill-detail 
+            <bill-detail
               v-bind:current-user="currentUser"
               v-bind:group="group"
-              v-for="bill in bills" 
-              v-bind:bill-id="bill.id" 
+              v-for="bill in bills"
+              v-bind:bill-id="bill.id"
               v-bind:key="bill.id"
               v-bind:open-modal="recentlyCreatedBillId == bill.id"
               v-on:did-open-modal="recentlyCreatedBillId = null"
