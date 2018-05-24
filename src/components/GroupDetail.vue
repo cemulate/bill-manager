@@ -48,6 +48,12 @@
                 {{ member.bestIdentifier }}
             </div>
         </div>
+        <hr>
+        <div class="columns">
+            <div class="column">
+                <group-invite v-bind:group-id="groupId"></group-invite>
+            </div>
+        </div>
     </div>
 
 </div>
@@ -55,6 +61,7 @@
 
 <script>
 import BillDetail from './BillDetail.vue';
+import GroupInvite from './GroupInvite.vue';
 
 import GroupDetailQuery from '../graphql/queries/GroupDetail.gql';
 import CreateNewBillMutation from '../graphql/mutations/CreateNewBill.gql';
@@ -114,6 +121,7 @@ export default {
     components: {
         FontAwesomeIcon,
         BillDetail,
+        GroupInvite,
     },
 }
 </script>

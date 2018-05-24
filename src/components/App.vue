@@ -32,6 +32,16 @@
               v-bind:groupId="group.id"
             >
             </group-detail>
+            <template v-if="selectedGroupId == null">
+                <span class="is-size-5">Select a group or join with an invite code</span>
+                <hr>
+                <group-invite
+                  v-if="selectedGroupId == null"
+                  v-bind:redeem-mode="true"
+                  v-on:invite-redeemed="selectGroup"
+                >
+                </group-invite>
+            </template>
         </div>
     </div>
 
@@ -55,6 +65,7 @@ import TheNavbar from './TheNavbar.vue';
 import LoginBox from './LoginBox.vue';
 import GroupSelect from './GroupSelect.vue';
 import GroupDetail from './GroupDetail.vue';
+import GroupInvite from './GroupInvite.vue';
 
 export default {
     data: () => ({
@@ -110,6 +121,7 @@ export default {
         LoginBox,
         GroupSelect,
         GroupDetail,
+        GroupInvite,
     }
 }
 </script>
