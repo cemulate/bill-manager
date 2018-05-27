@@ -154,14 +154,14 @@ create function bm.current_person() returns bm.user as $$
     select * from bm.user where bm.user.id = bm.current_user_id()
 $$ language sql stable;
 
-create function bm.register_user(first_name text, last_name text, email text, password text) returns bm.user as $$
+create function bm.register_user(email text, password text, first_name text = null, last_name text = null) returns bm.user as $$
 declare newuser bm.user;
 begin
     insert into bm.user (first_name, last_name) values (first_name, last_name) returning * into newuser;
     insert into bm_private.user_account (user_id, email, phash) values (newuser.id, email, crypt(password, gen_salt('bf')));
     return newuser;
 end;
-$$  language plpgsql strict security definer;
+$$  language plpgsql security definer;
 
 create table bm.invitation (
     id serial primary key,
