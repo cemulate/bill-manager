@@ -5,7 +5,7 @@
   "author": "Author",
   "scripts": {
     "production": "cross-env NODE_ENV=production NODE_CONFIG_DIR=server/config node server/server.js",
-    "development": "cross-env NODE_ENV=development NODE_CONFIG_DIR=server/config nodemon -i src server/server.js",
+    "development": "cross-env NODE_ENV=development NODE_CONFIG_DIR=server/config nodemon -i src  --inspect=0.0.0.0 server/server.js",
     "build": "webpack --mode production",
     "start": "cross-env NODE_CONFIG_DIR=server/config node server/server.js"
   },
