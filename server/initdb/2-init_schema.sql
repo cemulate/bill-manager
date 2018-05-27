@@ -136,10 +136,13 @@ create function bm.authenticate(email text, password text) returns bm.jwt_token 
 declare account bm_private.user_account;
 begin
     select bm_private.user_account.* into account from bm_private.user_account where bm_private.user_account.email = $1;
+    if not found then
+        raise exception 'Authentication error';
+    end if;
     if account.phash = crypt(password, account.phash) then
         return ('bm_user', account.user_id)::bm.jwt_token;
     else
-        return null;
+        raise exception 'Authentication error';
     end if;
 end;
 $$ language plpgsql strict security definer;
