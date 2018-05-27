@@ -2,18 +2,9 @@
 
 create table bm.user (
     id serial primary key,
-    first_name text check (char_length(first_name) < 80),
-    last_name text check (char_length(last_name) < 80),
+    username text check (char_length(username) < 80),
     created_at timestamp with time zone default now()
 );
-
-create function bm.user_best_identifier(u bm.user) returns text as $$
-    select case
-      when u.first_name is null and u.last_name is null then '<No name>'
-      when u.last_name is null then u.first_name
-      else u.first_name || ' ' || u.last_name
-    end
-$$ language sql stable;
 
 create table bm.group (
     id serial primary key,
@@ -157,10 +148,10 @@ create function bm.current_person() returns bm.user as $$
     select * from bm.user where bm.user.id = bm.current_user_id()
 $$ language sql stable;
 
-create function bm.register_user(email text, password text, first_name text = null, last_name text = null) returns bm.user as $$
+create function bm.register_user(email text, password text, username text = null) returns bm.user as $$
 declare newuser bm.user;
 begin
-    insert into bm.user (first_name, last_name) values (first_name, last_name) returning * into newuser;
+    insert into bm.user (username) values ($3) returning * into newuser;
     insert into bm_private.user_account (user_id, email, phash) values (newuser.id, email, crypt(password, gen_salt('bf')));
     return newuser;
 end;

@@ -5,12 +5,12 @@ grant usage on schema bm to bm_anonymous, bm_user;
 grant all on all sequences in schema bm to bm_user;
 
 grant execute on all functions in schema bm to bm_user;
-grant execute on function bm.register_user(text, text, text, text) to bm_anonymous;
+grant execute on function bm.register_user(text, text, text) to bm_anonymous;
 grant execute on function bm.authenticate(text, text) to bm_anonymous;
 
 -- In the following comments, CU stands for current user
 
-grant select, update(first_name, last_name), delete on table bm.user to bm_user;
+grant select, update(username), delete on table bm.user to bm_user;
 -- This table should not have rows inserted (use register_user)
 alter table bm.user enable row level security;
 -- CU should only see themselves and users that are in some group that CU is a member of

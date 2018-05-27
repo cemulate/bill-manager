@@ -13,7 +13,7 @@
             </div>
             <div class="navbar-end">
                 <div class="navbar-item has-dropdown is-hoverable">
-                    <a class="navbar-link">{{ currentUser.firstName }}</a>
+                    <a class="navbar-link">{{ currentUser.username }}</a>
                     <div class="navbar-dropdown">
                         <a class="navbar-item" v-on:click="$emit('logout')">Logout</a>
                     </div>

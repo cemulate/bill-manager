@@ -8,8 +8,7 @@ query BillDetail($billId: Int!) {
         participatingUsers {
             nodes {
                 id
-                bestIdentifier
-                firstName
+                username
                 userBillStatusByBillId(billId: $billId) {
                     percent
                     paid

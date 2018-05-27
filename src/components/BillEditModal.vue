@@ -28,7 +28,7 @@
               v-bind:key="user.id"
               v-bind:class="{ 'has-background-warning': user.isOwner }"
             >
-                <div class="column is-4">{{ user.bestIdentifier }}</div>
+                <div class="column is-4">{{ user.username }}</div>
                 <div class="column is-3">
                     <p class="control has-icons-right">
                         <input class="input" type="number" min="0" max="100" step="1"
@@ -64,7 +64,7 @@
                             <div class="select is-fullwidth">
                                 <select v-model="selectedUserId">
                                     <option value="0"></option>
-                                    <option v-for="user in nonParticipatingGroupMembers" v-bind:key="user.id" v-bind:value="user.id">{{ user.bestIdentifier }}</option>
+                                    <option v-for="user in nonParticipatingGroupMembers" v-bind:key="user.id" v-bind:value="user.id">{{ user.username }}</option>
                                 </select>
                             </div>
                         </div>

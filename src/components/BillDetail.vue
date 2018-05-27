@@ -19,7 +19,7 @@
               v-for="user in augmentedParticipants"
               v-bind:key="user.id"
               v-bind="user"
-              v-bind:label="user.firstName || user.bestIdentifier"
+              v-bind:label="user.username"
               v-bind:editable="canChangePaidStatusForUserOnBill(user, bill)"
               v-bind:isLoading="currentlyTogglingUserId == user.id"
               v-on:toggle-paid="toggleUserPaid(user)"

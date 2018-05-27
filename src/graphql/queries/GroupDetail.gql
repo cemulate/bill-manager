@@ -3,12 +3,12 @@ query GroupDetail($groupId: Int!) {
         id
         userByOwnerId {
             id
-            bestIdentifier
+            username
         }
         members {
             nodes {
                 id
-                bestIdentifier
+                username
             }
         }
         billsByGroupId(orderBy: CREATED_AT_DESC) {
@@ -19,7 +19,7 @@ query GroupDetail($groupId: Int!) {
                 createdAt
                 userByOwnerId {
                     id
-                    bestIdentifier
+                    username
                 }
             }
         }

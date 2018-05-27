@@ -7,7 +7,7 @@ query Groups {
                 name
                 userByOwnerId {
                     id
-                    bestIdentifier
+                    username
                 }
             }
         }

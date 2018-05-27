@@ -40,12 +40,12 @@
     <div v-if="group != null && selectedTab == 1">
         <div class="columns">
             <div class="column">
-                <strong>{{ group.userByOwnerId.bestIdentifier }}</strong>
+                <strong>{{ group.userByOwnerId.username }}</strong>
             </div>
         </div>
         <div class="columns" v-for="member in nonOwnerMembers" v-bind:key="member.id">
             <div class="column">
-                {{ member.bestIdentifier }}
+                {{ member.username }}
             </div>
         </div>
         <hr>

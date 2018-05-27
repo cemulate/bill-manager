@@ -23,20 +23,14 @@
         <div class="field">
             <label class="label">*&nbsp; Confirm Password</label>
             <div class="control">
-                <input type="password" class="input" placeholder="Password" v-model="confirmPassword">
+                <input type="password" class="input" placeholder="Password" v-model="registerInfo.confirmPassword">
             </div>
             <p class="help is-danger" v-if="!passwordsMatch">Password doesn't match</p>
         </div>
         <div class="field">
-            <label class="label">First Name / Username</label>
+            <label class="label">*&nbsp; Username (display name)</label>
             <div class="control">
-                <input type="text" class="input" placeholder="First Name" v-model.trim="extraInfo.firstName">
-            </div>
-        </div>
-        <div class="field">
-            <label class="label">Last Name</label>
-            <div class="control">
-                <input type="text" class="input" placeholder="Last Name" v-model.trim="extraInfo.lastName">
+                <input type="text" class="input" placeholder="First Name" v-model.trim="registerInfo.username">
             </div>
         </div>
         <div id="recaptcha-container" class="g-recaptcha" v-if="registerMode" data-sitekey="6LczWlsUAAAAAHeP9Nc5TN9BTupko6zpRf06QtDZ" style="margin-bottom: 10px"></div>
@@ -78,7 +72,10 @@ export default {
             email: '',
             password: '',
         },
-        confirmPassword: '',
+        registerInfo: {
+            confirmPassword: '',
+            username: '',
+        },
         extraInfo: {
             firstName: '',
             lastName: '',
@@ -107,7 +104,7 @@ export default {
             return /.+@.+\..+/.test(this.loginInfo.email);
         },
         passwordsMatch() {
-            return this.loginInfo.password == this.confirmPassword;
+            return this.loginInfo.password == this.registerInfo.confirmPassword;
         },
         formValid() {
             return this.emailValid && this.passwordsMatch;
@@ -133,9 +130,7 @@ export default {
         },
         async register() {
             this.busy = true;
-            let variables = { ...this.loginInfo, recaptchaResponse: this.recaptchaResponse };
-            if (this.extraInfo.firstName.length > 0) variables.firstName = this.extraInfo.firstName;
-            if (this.extraInfo.lastName.length > 0) variables.firstName = this.extraInfo.lastName;
+            let variables = { ...this.loginInfo, recaptchaResponse: this.recaptchaResponse, username: this.registerInfo.username };
             try {
                 let registerResult = await this.$apollo.mutate({ mutation: RegisterUserMutation, variables });
                 this.successfullyRegistered = true;
