@@ -8,11 +8,20 @@ const connection = `postgresql://${pgconf.username}:${pgconf.password}@${pgconf.
 
 const app = express();
 
+const RecaptchaPlugin = require('./plugins/recaptcha-plugin.js');
+
 app.use(postgraphile(connection, [pgconf.schema], {
     pgDefaultRole: pgconf.defaultRole,
     jwtPgTypeIdentifier: pgconf.jwtTokenIdentifier,
     jwtSecret: pgconf.jwtSecret,
-    graphiql: true
+    appendPlugins: [RecaptchaPlugin],
+    graphileBuildOptions: {
+        pgStrictFunctions: true,
+    },
+    additionalGraphQLContextFromRequest: (req, res) => ({
+        clientIp: req.ip,
+    }),
+    graphiql: true,
 }));
 
 if (process.env.NODE_ENV && process.env.NODE_ENV == 'development') {

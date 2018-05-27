@@ -9,5 +9,8 @@
         "defaultRole": "bm_anonymous",
         "jwtTokenIdentifier": "bm.jwt_token",
         "jwtSecret": "secret"
+    },
+    "recaptcha": {
+        "secret": null
     }
 }

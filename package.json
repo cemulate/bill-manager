@@ -41,6 +41,8 @@
     "money-math": "^2.5.1",
     "pg": "^7.4.3",
     "postgraphile": "^4.0.0-beta.5",
+    "request": "^2.87.0",
+    "request-promise-native": "^1.0.5",
     "v-money": "^0.8.1",
     "vue": "^2.5.16",
     "vue-apollo": "^3.0.0-beta.11",
