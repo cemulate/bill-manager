@@ -8,7 +8,7 @@
 
     <div class="columns is-centered">
         <div class="column is-4">
-            <login-box v-bind:problem="loginProblem" v-on:login="login"></login-box>
+            <login-box v-bind:problem="loginProblem" v-on:logged-in="fetchUser"></login-box>
         </div>
     </div>
 
@@ -53,14 +53,9 @@
 </template>
 
 <script>
-
 import gql from 'graphql-tag';
 
-import AuthenticateMutation from '../graphql/mutations/Authenticate.gql';
 import CurrentPersonQuery from '../graphql/queries/CurrentPerson.gql';
-
-import FontAwesomeIcon from '@fortawesome/vue-fontawesome';
-import { faSpinner } from '@fortawesome/fontawesome-free-solid';
 
 import TheNavbar from './TheNavbar.vue';
 import LoginBox from './LoginBox.vue';
@@ -73,23 +68,9 @@ export default {
         user: null,
         attemptingToRestoreSession: true,
         loginProblem: false,
-
         selectedGroupId: null,
     }),
     methods: {
-        async login(loginInfo) {
-            this.loginProblem = false;
-            try {
-                window.localStorage.removeItem('token');
-                let loginResult = await this.$apollo.mutate({ mutation: AuthenticateMutation, variables: loginInfo });
-                let token = loginResult.data.authenticate.jwtToken;
-                window.localStorage.setItem('token', token);
-                await this.fetchUser();
-            } catch (err) {
-                console.error(err);
-                this.loginProblem = true;
-            }
-        },
         async fetchUser() {
             // This would normally be a smart query on the apollo object, but there
             // are too many problems using that approach when dealing with authentication
@@ -99,7 +80,7 @@ export default {
         logout() {
             window.localStorage.removeItem('token');
             this.user = null;
-            this.groupId = null;
+            this.selectedGroupId = null;
             this.$apollo.provider.defaultClient.cache.reset();
         },
         selectGroup(groupId) {
@@ -119,7 +100,6 @@ export default {
         this.attemptingToRestoreSession = false;
     },
     components: {
-        FontAwesomeIcon,
         TheNavbar,
         LoginBox,
         GroupSelect,
