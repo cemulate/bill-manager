@@ -1,5 +1,0 @@
-mutation Authentication ($email: String!, $password: String!) {
-    authenticate(input: {email: $email, password: $password}) {
-        jwtToken
-    }
-}
