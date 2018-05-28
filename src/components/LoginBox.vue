@@ -5,18 +5,18 @@
     <button class="delete" v-on:click="successfullyRegistered = false"></button>
     Your account was created! Log in here:
 </div>
-<form v-on:submit.prevent="registerOrLogin">
+<form v-on:submit.prevent="registerOrLogin" method="post">
     <div class="field">
         <label class="label"><span v-if="registerMode">*&nbsp;</span>Email</label>
         <div class="control">
-            <input type="text" class="input" placeholder="Email" v-model.trim="loginInfo.email" maxlength="50">
+            <input name="email" type="text" class="input" placeholder="Email" v-model.trim="loginInfo.email" maxlength="50" autocomplete="username email">
         </div>
         <p class="help is-danger" v-if="registerMode && !emailValid">Enter a valid email address</p>
     </div>
     <div class="field">
         <label class="label"><span v-if="registerMode">*&nbsp;</span>Password</label>
         <div class="control">
-            <input type="password" class="input" placeholder="Password" v-model="loginInfo.password" maxlength="50">
+            <input name="password" type="password" class="input" placeholder="Password" v-model="loginInfo.password" maxlength="50" autocomplete="password">
         </div>
     </div>
     <div v-if="registerMode">
