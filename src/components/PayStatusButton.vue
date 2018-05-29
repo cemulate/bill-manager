@@ -1,8 +1,11 @@
 <template>
-    <span class="button"
+    <span
+      tabindex="0"
+      class="button"
       v-bind:class="{ 'is-success': paid && !isOwner, 'is-warning': isOwner, 'is-loading': isLoading }"
       v-bind:disabled="!editable"
       v-on:click="$emit('toggle-paid')"
+      v-on:keyup.enter="$emit('toggle-paid')"
     >
         <span v-if="displayLabel">{{ label }}</span>
         <strong v-if="!displayLabel">${{ owes }}</strong>

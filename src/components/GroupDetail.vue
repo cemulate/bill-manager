@@ -3,8 +3,8 @@
 
     <div class="tabs">
         <ul>
-            <li v-bind:class="{ 'is-active': selectedTab == 0 }" v-on:click="selectedTab = 0"><a>Bills</a></li>
-            <li v-bind:class="{ 'is-active': selectedTab == 1 }" v-on:click="selectedTab = 1"><a>Members</a></li>
+            <li tabindex="0" v-bind:class="{ 'is-active': selectedTab == 0 }" v-on:click="selectedTab = 0" v-on:keyup.enter="selectedTab = 0"><a>Bills</a></li>
+            <li tabindex="0" v-bind:class="{ 'is-active': selectedTab == 1 }" v-on:click="selectedTab = 1" v-on:keyup.enter="selectedTab = 1"><a>Members</a></li>
         </ul>
     </div>
 
@@ -12,7 +12,7 @@
         <nav class="level">
             <div class="level-left">
                 <div class="level-item">
-                    <a class="button is-link" v-on:click="createNewBill"><font-awesome-icon icon="plus"></font-awesome-icon>&nbsp; New Bill</a>
+                    <a tabindex="0" class="button is-link" v-on:click="createNewBill" v-on:keyup.enter="createNewBill"><font-awesome-icon icon="plus"></font-awesome-icon>&nbsp; New Bill</a>
                 </div>
             </div>
             <div class="level-right">

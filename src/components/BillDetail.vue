@@ -4,7 +4,7 @@
 <div class="columns" v-if="bill != null">
     <div class="column is-4">
         <div class="is-size-4">
-            <a v-on:click="showEditModal = true">
+            <a tabindex="0" v-on:click="showEditModal = true" v-on:keyup.enter="showEditModal = true">
                 <span class="is-size-5" v-if="bill.ownerId == currentUser.id"><font-awesome-icon icon="user-cog"></font-awesome-icon></span>
                 {{ bill.name }}
             </a>

@@ -69,7 +69,7 @@
                             </div>
                         </div>
                         <div class="control">
-                            <a class="button is-link" v-on:click="addSelectedUserToBill()">Add</a>
+                            <button class="button is-link" v-on:click="addSelectedUserToBill()">Add</button>
                         </div>
                     </div>
                 </div>
