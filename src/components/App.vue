@@ -34,8 +34,6 @@
             >
             </group-detail>
             <template v-if="selectedGroupId == null">
-                <span class="is-size-5">Select a group or join with an invite code</span>
-                <hr>
                 <group-invite
                   v-if="selectedGroupId == null"
                   v-bind:redeem-mode="true"

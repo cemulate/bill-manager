@@ -2,17 +2,18 @@
 <div class="field">
     <div class="field has-addons">
         <p class="control" v-if="!redeemMode">
-            <a
+            <button
               class="button is-link"
               v-bind:class="{ 'is-loading': gettingInvite }"
               v-on:click="getInvite"
             >
-                Generate an invite code for this group
-            </a>
+                Generate
+            </button>
         </p>
         <p class="control is-expanded">
             <input
-              class="input"
+              id="code-input"
+              class="input monospace"
               v-bind:class="{ 'has-background-light': !redeemMode }"
               type="text"
               v-bind:readonly="!redeemMode"
@@ -21,17 +22,19 @@
             >
         </p>
         <p class="control" v-if="redeemMode">
-            <a
+            <button
               class="button is-link"
               v-bind:class="{ 'is-loading': gettingInvite }"
               v-on:click="redeemInvite"
             >
                 Join Group
-            </a>
+            </button>
         </p>
     </div>
-    <p class="help is-danger" v-if="message != null">
-        {{ message }}
+    <p class="help" v-bind:class="{ 'is-danger': message != null }">
+        <span v-if="message != null">{{ message }}</span>
+        <span v-if="message == null && !redeemMode">Generate an invite code that others can use to join this group for 1 hour</span>
+        <span v-if="message == null && redeemMode">Join a group using an invite code</span>
     </p>
 </div>
 </template>
@@ -58,6 +61,7 @@ export default {
             try {
                 let result = await this.$apollo.mutate({ mutation: GetGroupInviteMutation, variables: { groupId: this.groupId } });
                 this.code = result.data.makeInviteCodeForGroup.code;
+                window.setTimeout(() => document.getElementById('code-input').select(), 1);
             } catch (err) {
                 console.error(err);
             }
