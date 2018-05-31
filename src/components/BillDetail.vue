@@ -79,9 +79,6 @@ export default {
         },
     },
     methods: {
-        dateFormat(date) {
-            return format(parse(date), 'MM/DD/YYYY');
-        },
         refreshBill() {
             this.$apollo.queries.bill.refetch();
         },

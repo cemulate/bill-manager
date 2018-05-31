@@ -1,4 +1,5 @@
 import money from 'money-math';
+import { parse, format } from 'date-fns';
 
 export default {
     methods: {
@@ -26,6 +27,10 @@ export default {
 
         moneyOwedFromPercent(total, percent) {
             return money.percent(total, money.floatToAmount(percent));
-        }
+        },
+
+        dateFormat(date, formatString) {
+            return format(parse(date), formatString);
+        },
     },
 };
