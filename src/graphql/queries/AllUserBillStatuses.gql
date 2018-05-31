@@ -1,0 +1,20 @@
+query AllUserBillStatuses($groupId: Int!) {
+    groupById(id: $groupId) {
+        id
+        allUserBillStatuses {
+            nodes {
+                userId
+                billId
+                billByBillId {
+                    id
+                    name
+                    createdAt
+                    ownerId
+                    amount
+                }
+                paid
+                percent
+            }
+        }
+    }
+}

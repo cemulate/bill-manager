@@ -100,6 +100,14 @@ create function bm.user_user_bill_status_by_bill_id(u bm.user, bill_id integer) 
     select * from bm.user_bill_status where (user_id = u.id and bill_id = $2);
 $$ language sql stable;
 
+create function bm.group_all_user_bill_statuses(g bm.group) returns setof bm.user_bill_status as $$
+    select * from bm.user_bill_status where (
+        user_id in (select user_id from bm.user_group where (group_id = g.id))
+        and
+        (select group_id from bm.bill where (id = bill_id)) = g.id
+    );
+$$ language sql stable;
+
 ----------------------------------------------------
 
 -- Authentication

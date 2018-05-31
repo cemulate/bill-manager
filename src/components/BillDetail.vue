@@ -98,6 +98,9 @@ export default {
             }
         },
     },
+    created() {
+        this.refreshBill();
+    },
     apollo: {
         bill: {
             query: BillDetailQuery,

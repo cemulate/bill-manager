@@ -5,6 +5,7 @@
         <ul>
             <li tabindex="0" v-bind:class="{ 'is-active': selectedTab == 0 }" v-on:click="selectedTab = 0" v-on:keyup.enter="selectedTab = 0"><a>Bills</a></li>
             <li tabindex="0" v-bind:class="{ 'is-active': selectedTab == 1 }" v-on:click="selectedTab = 1" v-on:keyup.enter="selectedTab = 1"><a>Members</a></li>
+            <li tabindex="0" v-bind:class="{ 'is-active': selectedTab == 2 }" v-on:click="selectedTab = 2" v-on:keyup.enter="selectedTab = 2"><a>Reconcile</a></li>
         </ul>
     </div>
 
@@ -54,6 +55,13 @@
                 <group-invite v-bind:group-id="groupId"></group-invite>
             </div>
         </div>
+    <div v-if="group != null && selectedTab == 2">
+        <reconcile-view
+          v-bind:current-user="currentUser"
+          v-bind:groupId="group.id"
+          v-bind:members="group.members.nodes"
+        >
+        </reconcile-view>
     </div>
 
 </div>
@@ -62,6 +70,7 @@
 <script>
 import BillDetail from './BillDetail.vue';
 import GroupInvite from './GroupInvite.vue';
+import ReconcileView from './ReconcileView.vue';
 
 import GroupDetailQuery from '../graphql/queries/GroupDetail.gql';
 import CreateNewBillMutation from '../graphql/mutations/CreateNewBill.gql';
@@ -122,6 +131,7 @@ export default {
         FontAwesomeIcon,
         BillDetail,
         GroupInvite,
+        ReconcileView,
     },
 }
 </script>
