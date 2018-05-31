@@ -1,6 +1,0 @@
-query UserQuery {
-    currentPerson {
-        id
-        username
-    }
-}
