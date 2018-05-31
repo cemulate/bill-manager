@@ -1,0 +1,7 @@
+mutation DeleteBill($billId: Int!) {
+    deleteBillById(input: { id: $billId }) {
+        bill {
+            id
+        }
+    }
+}

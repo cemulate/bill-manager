@@ -76,9 +76,16 @@
             </div>
         </section>
         <footer class="modal-card-foot">
-            <button class="button is-success" v-on:click="saveChanges()" v-bind:disabled="!percentsAddUp">Save changes</button>
-            <button class="button" v-on:click="$emit('close')">Cancel</button>
-            <span class="is-right has-text-danger" v-if="!percentsAddUp">Please ensure that percents add to 100%</span>
+            <div class="level" style="width: 100%">
+                <div class="level-left">
+                    <div class="level-item"><button class="button is-success" v-on:click="saveChanges()" v-bind:disabled="!percentsAddUp">Save changes</button></div>
+                    <div class="level-item"><button class="button" v-on:click="$emit('close')">Cancel</button></div>
+                </div>
+                <div class="level-right">
+                    <!-- <span class="has-text-danger" v-if="!percentsAddUp">Percents do not add to 100%</span> -->
+                    <div class="level-item"><button class="button is-danger" v-on:click="deleteBill">Delete</button></div>
+                </div>
+            </div>
         </footer>
     </div>
     <button class="modal-close is-large" v-on:click="$emit('close')"></button>
@@ -101,6 +108,7 @@ import AddUsersToBillMutation from '../graphql/mutations/AddUsersToBill.gql';
 import RemoveUsersFromBillMutation from '../graphql/mutations/RemoveUsersFromBill.gql';
 import UpdateUserBillStatusMutation from '../graphql/mutations/UpdateUserBillStatus.gql';
 import UpdateBillMutation from '../graphql/mutations/UpdateBill.gql';
+import DeleteBillMutation from '../graphql/mutations/DeleteBill.gql';
 
 export default {
     data: () => ({
@@ -172,6 +180,14 @@ export default {
                 this.$emit('updated-bill');
             } catch (err) {
                 console.log(err);
+            }
+        },
+        async deleteBill() {
+            try {
+                let result = this.$apollo.mutate({ mutation: DeleteBillMutation, variables: { billId: this.bill.id } });
+                this.$emit('close');
+                this.$emit('deleted-bill');
+            } catch (err) {
             }
         }
     },

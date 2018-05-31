@@ -31,6 +31,7 @@
               v-if="selectedGroupId != null"
               v-bind:current-user="user"
               v-bind:groupId="selectedGroupId"
+              v-on:deleted="selectedGroupId = null"
             >
             </group-detail>
             <template v-if="selectedGroupId == null">

@@ -36,6 +36,7 @@
   v-bind:show="showEditModal"
   v-on:close="showEditModal = false"
   v-on:updated-bill="refreshBill()"
+  v-on:deleted-bill="$emit('deleted')"
 >
 </bill-edit-modal>
 

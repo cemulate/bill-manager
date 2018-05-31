@@ -1,0 +1,7 @@
+mutation DeleteGroup($groupId: Int!) {
+    deleteGroupById(input: { id: $groupId }) {
+        group {
+            id
+        }
+    }
+}

@@ -33,6 +33,7 @@
               v-bind:key="bill.id"
               v-bind:open-modal="recentlyCreatedBillId == bill.id"
               v-on:did-open-modal="recentlyCreatedBillId = null"
+              v-on:deleted="$apollo.queries.group.refetch()"
             >
             </bill-detail>
         </section>
@@ -55,6 +56,17 @@
                 <group-invite v-bind:group-id="groupId"></group-invite>
             </div>
         </div>
+        <button class="button is-danger" v-if="group.ownerId == currentUser.id" v-on:click="showDeleteGroupModal = true">Delete this group</button>
+        <delete-confirmation-modal
+          v-bind:target="group.name"
+          v-bind:extra-warning="'Doing so will delete all bills in this group'"
+          v-bind:show="showDeleteGroupModal"
+          v-on:close="showDeleteGroupModal = false"
+          v-on:delete="deleteGroup"
+        >
+        </delete-confirmation-modal>
+    </div>
+
     <div v-if="group != null && selectedTab == 2">
         <reconcile-view
           v-bind:current-user="currentUser"
@@ -71,9 +83,11 @@
 import BillDetail from './BillDetail.vue';
 import GroupInvite from './GroupInvite.vue';
 import ReconcileView from './ReconcileView.vue';
+import DeleteConfirmationModal from './DeleteConfirmationModal.vue';
 
 import GroupDetailQuery from '../graphql/queries/GroupDetail.gql';
 import CreateNewBillMutation from '../graphql/mutations/CreateNewBill.gql';
+import DeleteGroupMutation from '../graphql/mutations/DeleteGroup.gql';
 
 import FontAwesomeIcon from '@fortawesome/vue-fontawesome';
 import { faPlus } from '@fortawesome/fontawesome-free-solid';
@@ -86,6 +100,7 @@ export default {
         group: null,
         selectedTab: 0,
         recentlyCreatedBillId: null,
+        showDeleteGroupModal: false,
     }),
     props: {
         currentUser: Object,
@@ -117,6 +132,14 @@ export default {
                 console.log(err);
             }
         },
+        async deleteGroup() {
+            try {
+                let result = await this.$apollo.mutate({ mutation: DeleteGroupMutation, variables: { groupId: this.groupId } });
+                this.$emit('deleted');
+            } catch (err) {
+
+            }
+        }
     },
     apollo: {
         group: {
@@ -132,6 +155,7 @@ export default {
         BillDetail,
         GroupInvite,
         ReconcileView,
+        DeleteConfirmationModal,
     },
 }
 </script>
