@@ -1,6 +1,7 @@
 query GroupDetail($groupId: Int!) {
     groupById(id: $groupId) {
         id
+        ownerId
         userByOwnerId {
             id
             username
@@ -17,6 +18,7 @@ query GroupDetail($groupId: Int!) {
                 name
                 amount
                 createdAt
+                ownerId
                 userByOwnerId {
                     id
                     username

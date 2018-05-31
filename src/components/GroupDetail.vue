@@ -4,26 +4,25 @@
     <div class="tabs">
         <ul>
             <li tabindex="0" v-bind:class="{ 'is-active': selectedTab == 0 }" v-on:click="selectedTab = 0" v-on:keyup.enter="selectedTab = 0"><a>Bills</a></li>
-            <li tabindex="0" v-bind:class="{ 'is-active': selectedTab == 1 }" v-on:click="selectedTab = 1" v-on:keyup.enter="selectedTab = 1"><a>Members</a></li>
+            <li tabindex="0" v-bind:class="{ 'is-active': selectedTab == 1 }" v-on:click="selectedTab = 1" v-on:keyup.enter="selectedTab = 1"><a>Info</a></li>
             <li tabindex="0" v-bind:class="{ 'is-active': selectedTab == 2 }" v-on:click="selectedTab = 2" v-on:keyup.enter="selectedTab = 2"><a>Reconcile</a></li>
         </ul>
     </div>
 
     <div v-if="group != null && selectedTab == 0">
-        <nav class="level">
-            <div class="level-left">
-                <div class="level-item">
-                    <a tabindex="0" class="button is-link" v-on:click="createNewBill" v-on:keyup.enter="createNewBill"><font-awesome-icon icon="plus"></font-awesome-icon>&nbsp; New Bill</a>
-                </div>
-            </div>
-            <div class="level-right">
-                <div class="level-item">
-
-                </div>
-            </div>
-        </nav>
         <section v-for="{ month, bills } in billsByMonth" v-bind:key="month">
-            <span class="is-size-4">{{ formatMonthHeading(month) }}</span>
+            <div class="level">
+                <div class="level-left">
+                    <div class="level-item"><span class="is-size-4">{{ formatMonthHeading(month) }}</span></div>
+                </div>
+                <div class="level-right">
+                    <div class="level-item">
+                        <button class="button is-link" v-on:click="createNewBill" v-on:keyup.enter="createNewBill">
+                            <font-awesome-icon icon="plus"></font-awesome-icon>&nbsp; New Bill
+                        </button>
+                    </div>
+                </div>
+            </div>
             <hr>
             <bill-detail
               v-bind:current-user="currentUser"
@@ -40,22 +39,16 @@
     </div>
 
     <div v-if="group != null && selectedTab == 1">
-        <div class="columns">
-            <div class="column">
-                <strong>{{ group.userByOwnerId.username }}</strong>
+        <div class="box">
+            <span class="is-size-5">Members</span>
+            <hr>
+            <div class="tags">
+                <span class="tag is-large is-warning">{{ group.userByOwnerId.username }}</span>
+                <span class="tag is-large" v-for="member in nonOwnerMembers" v-bind:key="member.id">{{ member.username }}</span>
             </div>
         </div>
-        <div class="columns" v-for="member in nonOwnerMembers" v-bind:key="member.id">
-            <div class="column">
-                {{ member.username }}
-            </div>
-        </div>
+        <group-invite></group-invite>
         <hr>
-        <div class="columns">
-            <div class="column">
-                <group-invite v-bind:group-id="groupId"></group-invite>
-            </div>
-        </div>
         <button class="button is-danger" v-if="group.ownerId == currentUser.id" v-on:click="showDeleteGroupModal = true">Delete this group</button>
         <delete-confirmation-modal
           v-bind:target="group.name"
