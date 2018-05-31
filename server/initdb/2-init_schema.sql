@@ -85,22 +85,14 @@ create function bm.bill_paid_users(b bm.bill) returns setof bm.user as $$
 $$ language sql stable;
 
 create function bm.add_users_to_bill(user_ids integer[], bill_id integer) returns void as $$
-declare i integer;
 begin
-    foreach i in array user_ids
-    loop
-        insert into bm.user_bill_status (user_id, bill_id) values (i, $2);
-    end loop;
+    insert into bm.user_bill_status (user_id, bill_id) values (unnest(user_ids), bill_id);
 end;
 $$ language plpgsql;
 
 create function bm.remove_users_from_bill(user_ids integer[], bill_id integer) returns void as $$
-declare i integer;
 begin
-    foreach i in array user_ids
-    loop
-        delete from bm.user_bill_status where (bm.user_bill_status.user_id = i and bm.user_bill_status.bill_id = $2);
-    end loop;
+    delete from bm.user_bill_status where (bm.user_bill_status.user_id = any(user_ids) and bm.user_bill_status.bill_id = $2);
 end;
 $$ language plpgsql;
 
