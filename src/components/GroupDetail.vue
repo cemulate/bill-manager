@@ -10,6 +10,11 @@
     </div>
 
     <div v-if="group != null && selectedTab == 0">
+        <span v-if="billsByMonth.length == 0">
+            <button class="button is-link" v-on:click="createNewBill" v-on:keyup.enter="createNewBill">
+                <font-awesome-icon icon="plus"></font-awesome-icon>&nbsp; New Bill
+            </button>
+        </span>
         <section v-for="{ month, bills } in billsByMonth" v-bind:key="month">
             <div class="level">
                 <div class="level-left">
