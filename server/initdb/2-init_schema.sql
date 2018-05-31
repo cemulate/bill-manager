@@ -47,7 +47,7 @@ create table bm.bill (
     id serial primary key,
     name text not null check (char_length(name) < 80),
     amount text not null check (amount ~* '\-?\d+\.\d\d'),
-    group_id integer not null references bm.group (id),
+    group_id integer not null references bm.group (id) on delete cascade,
     owner_id integer not null references bm.user (id),
     created_at timestamp with time zone default now()
 );
@@ -67,7 +67,7 @@ $$ language plpgsql;
 -- User-bill status (percent responsible; paid status)
 create table bm.user_bill_status (
     user_id integer not null references bm.user (id),
-    bill_id integer not null references bm.bill (id),
+    bill_id integer not null references bm.bill (id) on delete cascade,
     percent integer not null default 0 check (percent >= 0 and percent <= 100),
     paid boolean not null default false,
     primary key (user_id, bill_id)
