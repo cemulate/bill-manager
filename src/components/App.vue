@@ -37,6 +37,7 @@
             <template v-if="selectedGroupId == null">
                 <group-invite
                   v-if="selectedGroupId == null"
+                  v-bind:groupId="selectedGroupId"
                   v-bind:redeem-mode="true"
                   v-on:invite-redeemed="selectGroup"
                 >

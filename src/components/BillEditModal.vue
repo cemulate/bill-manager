@@ -43,7 +43,7 @@
                         <pay-status-button
                           class="is-fullwidth"
                           v-bind="user"
-                          v-bind:owes="moneyOwedFromPercent(bill.amount, user.percent)"
+                          v-bind:owes="moneyOwedFromPercent(editData.amount, user.percent)"
                           v-bind:label="''"
                           v-bind:editable="canChangePaidStatusForUserOnBill(user, bill)"
                           v-bind:displayLabel="false"

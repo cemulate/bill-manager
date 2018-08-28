@@ -52,7 +52,7 @@
                 <span class="tag is-large" v-for="member in nonOwnerMembers" v-bind:key="member.id">{{ member.username }}</span>
             </div>
         </div>
-        <group-invite></group-invite>
+        <group-invite v-bind:groupId="group.id"></group-invite>
         <hr>
         <button class="button is-danger" v-if="group.ownerId == currentUser.id" v-on:click="showDeleteGroupModal = true">Delete this group</button>
         <delete-confirmation-modal
