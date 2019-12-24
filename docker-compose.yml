@@ -4,7 +4,8 @@ services:
   app:
     build:
       context: .
-    entrypoint: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; npm run development'
+    environment:
+      NODE_ENV: development
     depends_on:
       - db
     ports:
@@ -12,9 +13,15 @@ services:
       - 9229:9229
     volumes:
       - .:/app
+      - /app/node_modules
   db:
     image: postgres
     ports:
       - 5432:5432
     volumes:
       - ./server/initdb:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
